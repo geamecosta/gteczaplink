@@ -106,14 +106,14 @@ export default function Index() {
     <div className="animate-fade-in-up">
       <div className="text-center space-y-4 mb-10 md:mb-16">
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-foreground">
-          Crie seu Link de WhatsApp em{' '}
+          Crie seu Link de WhatsApp com o{' '}
           <span className="text-primary bg-primary/10 px-3 py-1 rounded-xl inline-block mt-2 md:mt-0 shadow-sm">
-            Segundos
+            GtecZap Link
           </span>
         </h1>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto font-medium">
           Transforme seu número em um link curto e personalizado para facilitar suas vendas,
-          contatos e redes sociais.
+          contatos e redes sociais em segundos.
         </p>
       </div>
 

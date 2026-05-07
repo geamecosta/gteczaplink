@@ -9,7 +9,33 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      whatsapp_links: {
+        Row: {
+          created_at: string
+          id: string
+          message: string | null
+          phone: string
+          url: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message?: string | null
+          phone: string
+          url: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string | null
+          phone?: string
+          url?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -153,3 +179,30 @@ export const Constants = {
 // IMPORTANT: The TypeScript types above map UUID, TEXT, VARCHAR all to "string".
 // Use the COLUMN TYPES section below to know the real PostgreSQL type for each column.
 // Always use the correct PostgreSQL type when writing SQL migrations.
+
+// --- COLUMN TYPES (actual PostgreSQL types) ---
+// Use this to know the real database type when writing migrations.
+// "string" in TypeScript types above may be uuid, text, varchar, timestamptz, etc.
+// Table: whatsapp_links
+//   id: uuid (not null, default: gen_random_uuid())
+//   user_id: uuid (nullable)
+//   phone: text (not null)
+//   message: text (nullable)
+//   url: text (not null)
+//   created_at: timestamp with time zone (not null, default: now())
+
+// --- CONSTRAINTS ---
+// Table: whatsapp_links
+//   PRIMARY KEY whatsapp_links_pkey: PRIMARY KEY (id)
+//   FOREIGN KEY whatsapp_links_user_id_fkey: FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE
+
+// --- ROW LEVEL SECURITY POLICIES ---
+// Table: whatsapp_links
+//   Policy "allow_delete_auth" (DELETE, PERMISSIVE) roles={authenticated}
+//     USING: (user_id = auth.uid())
+//   Policy "allow_insert_anon" (INSERT, PERMISSIVE) roles={anon}
+//     WITH CHECK: true
+//   Policy "allow_insert_auth" (INSERT, PERMISSIVE) roles={authenticated}
+//     WITH CHECK: true
+//   Policy "allow_select_auth" (SELECT, PERMISSIVE) roles={authenticated}
+//     USING: (user_id = auth.uid())
