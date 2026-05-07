@@ -26,7 +26,11 @@ import { Card, CardContent } from '@/components/ui/card'
 
 import { PreviewBox } from '@/components/PreviewBox'
 import { ResultBox } from '@/components/ResultBox'
+import { HistorySection } from '@/components/HistorySection'
 import { cn } from '@/lib/utils'
+import { useAuth } from '@/hooks/use-auth'
+import { saveLink } from '@/services/whatsapp-links'
+import { toast } from 'sonner'
 
 const formSchema = z.object({
   countryCode: z.string().min(1),
@@ -52,6 +56,9 @@ function applyPhoneMask(value: string) {
 export default function Index() {
   const [generatedLink, setGeneratedLink] = useState<string | null>(null)
   const [isGenerating, setIsGenerating] = useState(false)
+  const [refreshKey, setRefreshKey] = useState(0)
+
+  const { user } = useAuth()
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -68,17 +75,31 @@ export default function Index() {
     return () => subscription.unsubscribe()
   }, [form, generatedLink])
 
-  function onSubmit(values: FormValues) {
+  async function onSubmit(values: FormValues) {
     setIsGenerating(true)
-    setTimeout(() => {
+    try {
       const cleanPhone = values.phone.replace(/\D/g, '')
       let url = `https://wa.me/${values.countryCode}${cleanPhone}`
       if (values.message && values.message.trim() !== '') {
         url += `?text=${encodeURIComponent(values.message.trim())}`
       }
+
+      const formattedPhone = `+${values.countryCode} ${values.phone}`
+      const { error } = await saveLink(user?.id, formattedPhone, values.message, url)
+
+      if (error) {
+        console.error('Erro ao salvar no histórico:', error)
+      }
+
       setGeneratedLink(url)
+      if (user) {
+        setRefreshKey((k) => k + 1)
+      }
+    } catch (err) {
+      toast.error('Erro ao gerar o link. Tente novamente.')
+    } finally {
       setIsGenerating(false)
-    }, 600)
+    }
   }
 
   return (
@@ -192,6 +213,12 @@ export default function Index() {
                   )}
                   {generatedLink ? 'Link Gerado!' : 'Gerar Link Grátis'}
                 </Button>
+
+                {!user && (
+                  <p className="text-xs text-center text-muted-foreground mt-2">
+                    Dica: Faça login para salvar seus links no histórico.
+                  </p>
+                )}
               </form>
             </Form>
           </CardContent>
@@ -206,6 +233,12 @@ export default function Index() {
         </div>
       </div>
 
+      {user && (
+        <section className="mb-20">
+          <HistorySection key={refreshKey} />
+        </section>
+      )}
+
       <section id="como-funciona" className="grid md:grid-cols-3 gap-8 pt-12 border-t border-muted">
         <FeatureCard
           icon={Sparkles}
@@ -215,7 +248,7 @@ export default function Index() {
         <FeatureCard
           icon={ShieldCheck}
           title="Seguro & Privado"
-          desc="Nós não armazenamos seu número de telefone, mensagens ou qualquer dado pessoal."
+          desc="Seus links só são salvos se você criar uma conta, mantendo total controle sobre seus dados."
         />
         <FeatureCard
           icon={LinkIcon}
