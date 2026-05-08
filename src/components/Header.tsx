@@ -40,7 +40,13 @@ export function Header() {
           <div className="w-px h-6 bg-slate-200 hidden md:block mx-2" />
           {user ? (
             <div className="flex items-center gap-4">
-              <span className="text-sm font-medium text-slate-600 hidden sm:inline-block">
+              <Link
+                to="/dashboard"
+                className="text-sm font-semibold text-slate-600 hover:text-slate-900 hidden sm:inline-block transition-colors"
+              >
+                Dashboard
+              </Link>
+              <span className="text-sm font-medium text-slate-400 hidden lg:inline-block border-l border-slate-200 pl-4">
                 {user.email}
               </span>
               <Button
