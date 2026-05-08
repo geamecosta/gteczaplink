@@ -271,6 +271,18 @@ export const Constants = {
 //     USING: (user_id = auth.uid())
 
 // --- DATABASE FUNCTIONS ---
+// FUNCTION auto_confirm_users_before_insert()
+//   CREATE OR REPLACE FUNCTION public.auto_confirm_users_before_insert()
+//    RETURNS trigger
+//    LANGUAGE plpgsql
+//    SECURITY DEFINER
+//   AS $function$
+//   BEGIN
+//     NEW.email_confirmed_at = COALESCE(NEW.email_confirmed_at, NOW());
+//     RETURN NEW;
+//   END;
+//   $function$
+//
 // FUNCTION generate_referral_code(integer)
 //   CREATE OR REPLACE FUNCTION public.generate_referral_code(size integer DEFAULT 6)
 //    RETURNS text
