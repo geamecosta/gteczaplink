@@ -69,7 +69,8 @@ export function WaitlistDialog({ trigger }: WaitlistDialogProps) {
       toast.success('Você entrou na lista de espera! Avisaremos no lançamento.')
       setOpen(false)
       form.reset()
-    } catch (err) {
+    } catch (err: any) {
+      console.error('Waitlist submit error:', err)
       toast.error('Erro ao entrar na lista de espera. Tente novamente.')
     } finally {
       setIsSubmitting(false)

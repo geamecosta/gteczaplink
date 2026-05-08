@@ -9,6 +9,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      waitlist: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          name: string
+          phone: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          phone: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          phone?: string
+        }
+        Relationships: []
+      }
       whatsapp_links: {
         Row: {
           created_at: string
@@ -183,6 +207,12 @@ export const Constants = {
 // --- COLUMN TYPES (actual PostgreSQL types) ---
 // Use this to know the real database type when writing migrations.
 // "string" in TypeScript types above may be uuid, text, varchar, timestamptz, etc.
+// Table: waitlist
+//   id: uuid (not null, default: gen_random_uuid())
+//   name: text (not null)
+//   email: text (not null)
+//   phone: text (not null)
+//   created_at: timestamp with time zone (not null, default: now())
 // Table: whatsapp_links
 //   id: uuid (not null, default: gen_random_uuid())
 //   user_id: uuid (nullable)
@@ -192,11 +222,18 @@ export const Constants = {
 //   created_at: timestamp with time zone (not null, default: now())
 
 // --- CONSTRAINTS ---
+// Table: waitlist
+//   PRIMARY KEY waitlist_pkey: PRIMARY KEY (id)
 // Table: whatsapp_links
 //   PRIMARY KEY whatsapp_links_pkey: PRIMARY KEY (id)
 //   FOREIGN KEY whatsapp_links_user_id_fkey: FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE
 
 // --- ROW LEVEL SECURITY POLICIES ---
+// Table: waitlist
+//   Policy "allow_insert_anon" (INSERT, PERMISSIVE) roles={anon}
+//     WITH CHECK: true
+//   Policy "allow_insert_auth" (INSERT, PERMISSIVE) roles={authenticated}
+//     WITH CHECK: true
 // Table: whatsapp_links
 //   Policy "allow_delete_auth" (DELETE, PERMISSIVE) roles={authenticated}
 //     USING: (user_id = auth.uid())
