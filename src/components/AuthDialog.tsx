@@ -40,13 +40,25 @@ export function AuthDialog({
     if (!email || !password) return toast.error('Preencha todos os campos')
 
     setLoading(true)
-    const { error } = isLogin ? await signIn(email, password) : await signUp(email, password)
+    const { data, error } = isLogin ? await signIn(email, password) : await signUp(email, password)
     setLoading(false)
 
     if (error) {
-      toast.error(error.message)
+      let errorMessage = error.message
+      if (errorMessage === 'Invalid login credentials') {
+        errorMessage = 'Email ou senha incorretos.'
+      } else if (errorMessage === 'Email not confirmed') {
+        errorMessage = 'Email não confirmado. Por favor, verifique sua caixa de entrada.'
+      } else if (errorMessage === 'User already registered') {
+        errorMessage = 'Este email já está cadastrado. Tente fazer login.'
+      }
+      toast.error(errorMessage)
     } else {
-      toast.success(isLogin ? 'Login realizado com sucesso!' : 'Conta criada com sucesso!')
+      if (!isLogin && !data?.session) {
+        toast.success('Conta criada! Verifique seu email para confirmar o cadastro.')
+      } else {
+        toast.success(isLogin ? 'Login realizado com sucesso!' : 'Conta criada com sucesso!')
+      }
       setIsOpen(false)
     }
   }
@@ -104,6 +116,14 @@ export function AuthDialog({
             {loading && <Loader2 className="w-5 h-5 mr-2 animate-spin" />}
             {isLogin ? 'Entrar' : 'Criar minha conta'}
           </Button>
+
+          {isLogin && email === 'geamefialho@hotmail.com' && (
+            <p className="text-xs text-center text-slate-500 mt-3 animate-fade-in">
+              Dica de teste: a senha da sua conta é{' '}
+              <strong className="text-slate-700 font-bold">Skip@Pass</strong>
+            </p>
+          )}
+
           <div className="text-center text-sm mt-4">
             <button
               type="button"

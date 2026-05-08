@@ -75,6 +75,16 @@ export type Database = {
     }
     Functions: {
       generate_referral_code: { Args: { size?: number }; Returns: string }
+      get_referral_status: { Args: { p_email: string }; Returns: Json }
+      join_waitlist: {
+        Args: {
+          p_email: string
+          p_name: string
+          p_phone: string
+          p_referred_by?: string
+        }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never
@@ -235,6 +245,7 @@ export const Constants = {
 
 // --- CONSTRAINTS ---
 // Table: waitlist
+//   UNIQUE waitlist_email_key: UNIQUE (email)
 //   PRIMARY KEY waitlist_pkey: PRIMARY KEY (id)
 //   UNIQUE waitlist_referral_code_key: UNIQUE (referral_code)
 // Table: whatsapp_links
@@ -277,6 +288,28 @@ export const Constants = {
 //   END;
 //   $function$
 //
+// FUNCTION get_referral_status(text)
+//   CREATE OR REPLACE FUNCTION public.get_referral_status(p_email text)
+//    RETURNS jsonb
+//    LANGUAGE plpgsql
+//    SECURITY DEFINER
+//   AS $function$
+//   DECLARE
+//     v_data jsonb;
+//   BEGIN
+//     SELECT jsonb_build_object(
+//       'name', name,
+//       'referral_code', referral_code,
+//       'referral_count', referral_count
+//     ) INTO v_data
+//     FROM public.waitlist
+//     WHERE email = p_email
+//     LIMIT 1;
+//
+//     RETURN v_data;
+//   END;
+//   $function$
+//
 // FUNCTION increment_referral_count()
 //   CREATE OR REPLACE FUNCTION public.increment_referral_count()
 //    RETURNS trigger
@@ -290,6 +323,31 @@ export const Constants = {
 //   END;
 //   $function$
 //
+// FUNCTION join_waitlist(text, text, text, text)
+//   CREATE OR REPLACE FUNCTION public.join_waitlist(p_name text, p_email text, p_phone text, p_referred_by text DEFAULT NULL::text)
+//    RETURNS jsonb
+//    LANGUAGE plpgsql
+//    SECURITY DEFINER
+//   AS $function$
+//   DECLARE
+//     v_waitlist public.waitlist;
+//   BEGIN
+//     -- Check if already exists
+//     SELECT * INTO v_waitlist FROM public.waitlist WHERE email = p_email LIMIT 1;
+//
+//     IF v_waitlist.id IS NOT NULL THEN
+//       RETURN to_jsonb(v_waitlist);
+//     END IF;
+//
+//     -- Insert new record
+//     INSERT INTO public.waitlist (name, email, phone, referred_by)
+//     VALUES (p_name, p_email, p_phone, p_referred_by)
+//     RETURNING * INTO v_waitlist;
+//
+//     RETURN to_jsonb(v_waitlist);
+//   END;
+//   $function$
+//
 // FUNCTION set_waitlist_referral_code()
 //   CREATE OR REPLACE FUNCTION public.set_waitlist_referral_code()
 //    RETURNS trigger
@@ -297,7 +355,7 @@ export const Constants = {
 //   AS $function$
 //   BEGIN
 //     IF NEW.referral_code IS NULL THEN
-//       NEW.referral_code := generate_referral_code();
+//       NEW.referral_code := public.generate_referral_code();
 //     END IF;
 //     RETURN NEW;
 //   END;
@@ -311,4 +369,5 @@ export const Constants = {
 
 // --- INDEXES ---
 // Table: waitlist
+//   CREATE UNIQUE INDEX waitlist_email_key ON public.waitlist USING btree (email)
 //   CREATE UNIQUE INDEX waitlist_referral_code_key ON public.waitlist USING btree (referral_code)
