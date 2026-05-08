@@ -21,12 +21,18 @@ export function Header() {
         <div className="flex items-center gap-2 md:gap-4">
           <Button
             variant="ghost"
+            onClick={() =>
+              document.getElementById('plataforma')?.scrollIntoView({ behavior: 'smooth' })
+            }
             className="hidden md:flex font-semibold text-slate-600 hover:text-slate-900"
           >
             Recursos
           </Button>
           <Button
             variant="ghost"
+            onClick={() =>
+              document.getElementById('planos')?.scrollIntoView({ behavior: 'smooth' })
+            }
             className="hidden md:flex font-semibold text-slate-600 hover:text-slate-900"
           >
             Planos
@@ -51,7 +57,11 @@ export function Header() {
               <AuthDialog
                 defaultMode="login"
                 trigger={
-                  <Button variant="ghost" className="font-semibold rounded-full hidden sm:flex">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="font-semibold rounded-full hidden sm:flex"
+                  >
                     Entrar
                   </Button>
                 }
@@ -59,7 +69,10 @@ export function Header() {
               <AuthDialog
                 defaultMode="register"
                 trigger={
-                  <Button className="rounded-full font-semibold shadow-lg shadow-emerald-500/20 hover:scale-105 transition-transform duration-300">
+                  <Button
+                    type="button"
+                    className="rounded-full font-semibold shadow-lg shadow-emerald-500/20 hover:scale-105 transition-transform duration-300"
+                  >
                     Começar Grátis
                   </Button>
                 }

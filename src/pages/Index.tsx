@@ -158,6 +158,9 @@ export default function Index() {
           <Button
             size="lg"
             variant="outline"
+            onClick={() =>
+              document.getElementById('plataforma')?.scrollIntoView({ behavior: 'smooth' })
+            }
             className="h-14 px-8 text-lg font-bold rounded-full border-slate-200 hover:bg-slate-50 transition-all duration-300 w-full sm:w-auto bg-white"
           >
             Ver Plataforma Completa <ArrowRight className="w-5 h-5 ml-2" />
@@ -407,7 +410,7 @@ export default function Index() {
       </section>
 
       {/* PRO FEATURES / ECOSYSTEM */}
-      <section className="mb-32">
+      <section id="plataforma" className="mb-32 scroll-mt-24">
         <div className="text-center space-y-6 mb-16">
           <div className="inline-block px-4 py-1.5 rounded-full bg-slate-900 text-white text-sm font-bold tracking-widest uppercase mb-2">
             Ecossistema Completo
@@ -446,9 +449,10 @@ export default function Index() {
             locked
           />
         </div>
-        <div className="mt-16 text-center">
+        <div id="planos" className="mt-16 text-center scroll-mt-24">
           <Button
             size="lg"
+            onClick={() => toast.info('Os planos premium estarão disponíveis em breve!')}
             className="h-14 px-10 text-lg font-bold rounded-full bg-slate-900 hover:bg-slate-800 shadow-2xl hover:-translate-y-1 transition-all duration-300"
           >
             Conhecer Planos Premium
