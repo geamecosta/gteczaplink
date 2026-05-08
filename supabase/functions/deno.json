@@ -1,5 +1,6 @@
 {
   "_versions": {
-    "waitlist-welcome": 1
+    "waitlist-welcome": 2,
+    "send-newsletter": 1
   }
 }

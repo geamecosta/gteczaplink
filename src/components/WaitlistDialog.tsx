@@ -3,8 +3,18 @@ import { useForm } from 'react-hook-form'
 import { useSearchParams } from 'react-router-dom'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Loader2, Mail, Phone, User as UserIcon, Check, Copy, Share2 } from 'lucide-react'
+import {
+  Loader2,
+  Mail,
+  Phone,
+  User as UserIcon,
+  Check,
+  Copy,
+  Share2,
+  TrendingUp,
+} from 'lucide-react'
 import { toast } from 'sonner'
+import { Link } from 'react-router-dom'
 
 import {
   Dialog,
@@ -140,9 +150,16 @@ export function WaitlistDialog({ trigger }: WaitlistDialogProps) {
               </div>
             </div>
 
-            <Button className="w-full mt-2" variant="ghost" onClick={() => handleOpenChange(false)}>
-              Fechar
-            </Button>
+            <div className="flex gap-2 mt-4">
+              <Button className="w-full" variant="outline" asChild>
+                <Link to="/status" onClick={() => handleOpenChange(false)}>
+                  <TrendingUp className="w-4 h-4 mr-2" /> Ver meu Status
+                </Link>
+              </Button>
+              <Button className="w-full" variant="ghost" onClick={() => handleOpenChange(false)}>
+                Fechar
+              </Button>
+            </div>
           </div>
         ) : (
           <>

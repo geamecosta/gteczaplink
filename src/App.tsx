@@ -6,6 +6,7 @@ import Index from './pages/Index'
 import NotFound from './pages/NotFound'
 import Layout from './components/Layout'
 import Dashboard from './pages/Dashboard'
+import ReferralStatus from './pages/ReferralStatus'
 import { AuthProvider } from '@/hooks/use-auth'
 
 const App = () => (
@@ -18,6 +19,7 @@ const App = () => (
           <Route element={<Layout />}>
             <Route path="/" element={<Index />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/status" element={<ReferralStatus />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>

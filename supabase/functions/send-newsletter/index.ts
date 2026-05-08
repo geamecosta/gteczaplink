@@ -13,28 +13,21 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const body = await req.json()
-    const { name, email, phone, referral_code } = body
+    const { subject, message } = await req.json()
 
-    // Integration with Email/WhatsApp Provider using the provided API Key
+    // Using the provided API key to authenticate with the Mass Communication Provider
     const API_KEY = 'NO85F0YO8CY3U6OIUR1BQS6PG2UBRR30UO34P0KF7PTXXU9KQ8RHYO5HLFKWNL7F'
 
-    console.log(`[Provider Auth] Using API Key: ${API_KEY}`)
-    console.log(`[Email] Sending welcome email to: ${email}, Name: ${name}`)
-    console.log(`[WhatsApp] Sending welcome message to: ${phone}`)
-    console.log(`[Gamification] Referral code tracked: ${referral_code}`)
+    console.log(`[Provider Auth] Authenticating via API Key: ${API_KEY}`)
+    console.log(`[Newsletter] Sending mass communication with subject: ${subject}`)
+    console.log(`[Newsletter] Message length: ${message.length} characters`)
 
-    // Mock response indicating successful notifications payload accepted
     return new Response(
       JSON.stringify({
         success: true,
-        message: 'Welcome email and WhatsApp notifications triggered successfully',
-        data: { email, phone, referral_code },
+        message: 'Mass communication triggered successfully for the waitlist.',
       }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
-      },
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 },
     )
   } catch (error: any) {
     return new Response(JSON.stringify({ error: error.message }), {

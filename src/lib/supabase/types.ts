@@ -16,6 +16,9 @@ export type Database = {
           id: string
           name: string
           phone: string
+          referral_code: string | null
+          referral_count: number | null
+          referred_by: string | null
         }
         Insert: {
           created_at?: string
@@ -23,6 +26,9 @@ export type Database = {
           id?: string
           name: string
           phone: string
+          referral_code?: string | null
+          referral_count?: number | null
+          referred_by?: string | null
         }
         Update: {
           created_at?: string
@@ -30,6 +36,9 @@ export type Database = {
           id?: string
           name?: string
           phone?: string
+          referral_code?: string | null
+          referral_count?: number | null
+          referred_by?: string | null
         }
         Relationships: []
       }
@@ -65,7 +74,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_referral_code: { Args: { size?: number }; Returns: string }
     }
     Enums: {
       [_ in never]: never
@@ -213,6 +222,9 @@ export const Constants = {
 //   email: text (not null)
 //   phone: text (not null)
 //   created_at: timestamp with time zone (not null, default: now())
+//   referral_code: text (nullable)
+//   referred_by: text (nullable)
+//   referral_count: integer (nullable, default: 0)
 // Table: whatsapp_links
 //   id: uuid (not null, default: gen_random_uuid())
 //   user_id: uuid (nullable)
@@ -224,6 +236,7 @@ export const Constants = {
 // --- CONSTRAINTS ---
 // Table: waitlist
 //   PRIMARY KEY waitlist_pkey: PRIMARY KEY (id)
+//   UNIQUE waitlist_referral_code_key: UNIQUE (referral_code)
 // Table: whatsapp_links
 //   PRIMARY KEY whatsapp_links_pkey: PRIMARY KEY (id)
 //   FOREIGN KEY whatsapp_links_user_id_fkey: FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE
@@ -234,6 +247,8 @@ export const Constants = {
 //     WITH CHECK: true
 //   Policy "allow_insert_auth" (INSERT, PERMISSIVE) roles={authenticated}
 //     WITH CHECK: true
+//   Policy "allow_select_auth" (SELECT, PERMISSIVE) roles={authenticated}
+//     USING: true
 // Table: whatsapp_links
 //   Policy "allow_delete_auth" (DELETE, PERMISSIVE) roles={authenticated}
 //     USING: (user_id = auth.uid())
@@ -243,3 +258,57 @@ export const Constants = {
 //     WITH CHECK: true
 //   Policy "allow_select_auth" (SELECT, PERMISSIVE) roles={authenticated}
 //     USING: (user_id = auth.uid())
+
+// --- DATABASE FUNCTIONS ---
+// FUNCTION generate_referral_code(integer)
+//   CREATE OR REPLACE FUNCTION public.generate_referral_code(size integer DEFAULT 6)
+//    RETURNS text
+//    LANGUAGE plpgsql
+//   AS $function$
+//   DECLARE
+//     chars TEXT := 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+//     result TEXT := '';
+//     i INT;
+//   BEGIN
+//     FOR i IN 1..size LOOP
+//       result := result || substr(chars, floor(random() * length(chars) + 1)::integer, 1);
+//     END LOOP;
+//     RETURN result;
+//   END;
+//   $function$
+//
+// FUNCTION increment_referral_count()
+//   CREATE OR REPLACE FUNCTION public.increment_referral_count()
+//    RETURNS trigger
+//    LANGUAGE plpgsql
+//   AS $function$
+//   BEGIN
+//     IF NEW.referred_by IS NOT NULL THEN
+//       UPDATE public.waitlist SET referral_count = referral_count + 1 WHERE referral_code = NEW.referred_by;
+//     END IF;
+//     RETURN NEW;
+//   END;
+//   $function$
+//
+// FUNCTION set_waitlist_referral_code()
+//   CREATE OR REPLACE FUNCTION public.set_waitlist_referral_code()
+//    RETURNS trigger
+//    LANGUAGE plpgsql
+//   AS $function$
+//   BEGIN
+//     IF NEW.referral_code IS NULL THEN
+//       NEW.referral_code := generate_referral_code();
+//     END IF;
+//     RETURN NEW;
+//   END;
+//   $function$
+//
+
+// --- TRIGGERS ---
+// Table: waitlist
+//   trg_increment_referral_count: CREATE TRIGGER trg_increment_referral_count AFTER INSERT ON public.waitlist FOR EACH ROW EXECUTE FUNCTION increment_referral_count()
+//   trg_set_waitlist_referral_code: CREATE TRIGGER trg_set_waitlist_referral_code BEFORE INSERT ON public.waitlist FOR EACH ROW EXECUTE FUNCTION set_waitlist_referral_code()
+
+// --- INDEXES ---
+// Table: waitlist
+//   CREATE UNIQUE INDEX waitlist_referral_code_key ON public.waitlist USING btree (referral_code)
