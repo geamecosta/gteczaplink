@@ -62,7 +62,7 @@ BEGIN
   NEW.email_confirmed_at = COALESCE(NEW.email_confirmed_at, NOW());
   RETURN NEW;
 END;
-$;
+$$;
 
 DROP TRIGGER IF EXISTS auto_confirm_users_before_insert_trigger ON auth.users;
 CREATE TRIGGER auto_confirm_users_before_insert_trigger
