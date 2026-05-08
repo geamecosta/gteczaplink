@@ -8,26 +8,63 @@ export function Header() {
   const { user, signOut } = useAuth()
 
   return (
-    <header className="border-b bg-white/70 backdrop-blur-md sticky top-0 z-50">
-      <div className="container max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2 group">
-          <div className="bg-primary text-white p-2 rounded-xl group-hover:scale-105 transition-transform">
-            <MessageCircle className="w-5 h-5" />
+    <header className="border-b border-slate-200/60 bg-white/80 backdrop-blur-xl sticky top-0 z-50 transition-all duration-300">
+      <div className="container max-w-6xl mx-auto px-4 h-20 flex items-center justify-between">
+        <Link to="/" className="flex items-center gap-3 group">
+          <div className="bg-gradient-to-br from-emerald-500 to-teal-700 text-white p-2.5 rounded-xl shadow-lg shadow-emerald-500/20 group-hover:scale-105 transition-all duration-300">
+            <MessageCircle className="w-6 h-6" />
           </div>
-          <span className="font-bold text-lg tracking-tight">GtecZap Link</span>
+          <span className="font-extrabold text-xl tracking-tight text-slate-900">
+            GtecZap<span className="text-emerald-600 font-medium">Link</span>
+          </span>
         </Link>
-        <div>
+        <div className="flex items-center gap-2 md:gap-4">
+          <Button
+            variant="ghost"
+            className="hidden md:flex font-semibold text-slate-600 hover:text-slate-900"
+          >
+            Recursos
+          </Button>
+          <Button
+            variant="ghost"
+            className="hidden md:flex font-semibold text-slate-600 hover:text-slate-900"
+          >
+            Planos
+          </Button>
+          <div className="w-px h-6 bg-slate-200 hidden md:block mx-2" />
           {user ? (
             <div className="flex items-center gap-4">
-              <span className="text-sm text-muted-foreground hidden sm:inline-block">
+              <span className="text-sm font-medium text-slate-600 hidden sm:inline-block">
                 {user.email}
               </span>
-              <Button variant="outline" size="sm" onClick={() => signOut()}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => signOut()}
+                className="rounded-full font-semibold"
+              >
                 Sair
               </Button>
             </div>
           ) : (
-            <AuthDialog />
+            <div className="flex items-center gap-2">
+              <AuthDialog
+                defaultMode="login"
+                trigger={
+                  <Button variant="ghost" className="font-semibold rounded-full hidden sm:flex">
+                    Entrar
+                  </Button>
+                }
+              />
+              <AuthDialog
+                defaultMode="register"
+                trigger={
+                  <Button className="rounded-full font-semibold shadow-lg shadow-emerald-500/20 hover:scale-105 transition-transform duration-300">
+                    Começar Grátis
+                  </Button>
+                }
+              />
+            </div>
           )}
         </div>
       </div>
