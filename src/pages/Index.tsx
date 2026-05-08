@@ -449,17 +449,104 @@ export default function Index() {
             locked
           />
         </div>
-        <div id="planos" className="mt-16 text-center scroll-mt-24">
-          <Button
-            size="lg"
-            onClick={() => toast.info('Os planos premium estarão disponíveis em breve!')}
-            className="h-14 px-10 text-lg font-bold rounded-full bg-slate-900 hover:bg-slate-800 shadow-2xl hover:-translate-y-1 transition-all duration-300"
-          >
-            Conhecer Planos Premium
-          </Button>
-          <p className="mt-6 text-slate-500 font-medium">
-            Ou comece usando o gerador gratuitamente, sem compromisso.
+      </section>
+
+      {/* PRICING */}
+      <section id="planos" className="mb-32 scroll-mt-24 max-w-5xl mx-auto px-4">
+        <div className="text-center space-y-4 mb-16">
+          <h2 className="text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight">
+            Planos e Preços
+          </h2>
+          <p className="text-lg text-slate-600 font-medium max-w-2xl mx-auto">
+            Escolha o plano ideal para a sua necessidade. Comece de graça e faça o upgrade quando
+            precisar de mais poder.
           </p>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-8 items-center max-w-4xl mx-auto">
+          {/* Free Plan */}
+          <div className="bg-white rounded-[2rem] p-8 md:p-10 border border-slate-200 shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col h-full">
+            <h3 className="text-2xl font-bold text-slate-900 mb-2">Grátis</h3>
+            <p className="text-slate-500 font-medium mb-6">
+              Para quem está começando e precisa do básico.
+            </p>
+            <div className="text-5xl font-extrabold text-slate-900 mb-8">
+              R$ 0<span className="text-xl text-slate-500 font-medium">/mês</span>
+            </div>
+
+            <ul className="space-y-4 mb-10 flex-1">
+              <li className="flex gap-3 text-slate-700 font-medium items-center">
+                <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" /> Gerar links
+              </li>
+              <li className="flex gap-3 text-slate-700 font-medium items-center">
+                <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" /> Salvar até 10 links
+              </li>
+              <li className="flex gap-3 text-slate-700 font-medium items-center">
+                <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" /> QR Code básico
+              </li>
+              <li className="flex gap-3 text-slate-400 font-medium items-center">
+                <XCircle className="w-5 h-5 text-slate-300 shrink-0" /> Analytics avançado
+              </li>
+              <li className="flex gap-3 text-slate-400 font-medium items-center">
+                <XCircle className="w-5 h-5 text-slate-300 shrink-0" /> Domínio personalizado
+              </li>
+            </ul>
+
+            <Button
+              size="lg"
+              variant="outline"
+              onClick={handleScroll}
+              className="w-full h-14 text-lg font-bold rounded-xl border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-900 transition-colors"
+            >
+              Começar Grátis
+            </Button>
+          </div>
+
+          {/* PRO Plan */}
+          <div className="bg-slate-900 rounded-[2rem] p-8 md:p-10 border border-slate-800 shadow-2xl relative transform md:-translate-y-4 flex flex-col h-full">
+            <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-4 py-1.5 rounded-full text-sm font-bold tracking-wider uppercase shadow-lg shadow-emerald-500/30">
+              Recomendado
+            </div>
+            <h3 className="text-2xl font-bold text-white mb-2">GtecZap PRO</h3>
+            <p className="text-slate-400 font-medium mb-6">
+              A máquina de vendas completa para o seu negócio.
+            </p>
+            <div className="text-5xl font-extrabold text-white mb-8">Em breve</div>
+
+            <ul className="space-y-4 mb-10 flex-1">
+              <li className="flex gap-3 text-slate-200 font-medium items-center">
+                <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" /> Links ilimitados
+              </li>
+              <li className="flex gap-3 text-slate-200 font-medium items-center">
+                <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" /> Analytics completo e
+                UTM
+              </li>
+              <li className="flex gap-3 text-slate-200 font-medium items-center">
+                <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" /> Domínio personalizado
+              </li>
+              <li className="flex gap-3 text-slate-200 font-medium items-center">
+                <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" /> QR Code customizado
+              </li>
+              <li className="flex gap-3 text-slate-200 font-medium items-center">
+                <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" /> Integrações e
+                Automações
+              </li>
+              <li className="flex gap-3 text-slate-200 font-medium items-center">
+                <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" /> API Oficial e Chatbot
+                IA
+              </li>
+            </ul>
+
+            <Button
+              size="lg"
+              onClick={() =>
+                toast.success('Você entrou na lista de espera! Avisaremos no lançamento.')
+              }
+              className="w-full h-14 text-lg font-bold rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white shadow-xl shadow-emerald-500/20 border-0 transition-all hover:scale-[1.02]"
+            >
+              Entrar na Lista de Espera
+            </Button>
+          </div>
         </div>
       </section>
     </div>
