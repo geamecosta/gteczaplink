@@ -44,6 +44,7 @@ import { useAuth } from '@/hooks/use-auth'
 import { saveLink } from '@/services/whatsapp-links'
 import { toast } from 'sonner'
 import { AuthDialog } from '@/components/AuthDialog'
+import { WaitlistDialog } from '@/components/WaitlistDialog'
 
 const formSchema = z.object({
   countryCode: z.string().min(1),
@@ -537,15 +538,16 @@ export default function Index() {
               </li>
             </ul>
 
-            <Button
-              size="lg"
-              onClick={() =>
-                toast.success('Você entrou na lista de espera! Avisaremos no lançamento.')
+            <WaitlistDialog
+              trigger={
+                <Button
+                  size="lg"
+                  className="w-full h-14 text-lg font-bold rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white shadow-xl shadow-emerald-500/20 border-0 transition-all hover:scale-[1.02]"
+                >
+                  Entrar na Lista de Espera
+                </Button>
               }
-              className="w-full h-14 text-lg font-bold rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white shadow-xl shadow-emerald-500/20 border-0 transition-all hover:scale-[1.02]"
-            >
-              Entrar na Lista de Espera
-            </Button>
+            />
           </div>
         </div>
       </section>
