@@ -1,138 +1,156 @@
 import { useState } from 'react'
-import { supabase } from '@/lib/supabase/client'
-import { Button } from '@/components/ui/button'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+import { getReferralStatus } from '@/services/waitlist'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Trophy, Users, Share2, Copy, Search, ArrowRight } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Loader2, Trophy, Copy, Users } from 'lucide-react'
 import { toast } from 'sonner'
 
-export default function ReferralStatus() {
-  const [email, setEmail] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [data, setData] = useState<any>(null)
+const formSchema = z.object({
+  email: z.string().email('E-mail inválido'),
+})
 
+export default function ReferralStatus() {
+  const [status, setStatus] = useState<any>(null)
+  const [loading, setLoading] = useState(false)
   const origin = window.location.origin
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!email) return
+  const form = useForm({
+    resolver: zodResolver(formSchema),
+    defaultValues: { email: '' },
+  })
 
+  async function onSubmit(values: any) {
     setLoading(true)
-    const { data: lead, error } = await supabase
-      .from('waitlist' as any)
-      .select('*')
-      .eq('email', email)
-      .single()
-
-    setLoading(false)
-
-    if (error || !lead) {
-      toast.error('Cadastro não encontrado com este e-mail.')
-      setData(null)
-    } else {
-      setData(lead)
+    try {
+      const { data, error } = await getReferralStatus(values.email)
+      if (error) throw error
+      if (!data) {
+        toast.error('E-mail não encontrado na lista de espera.')
+      } else {
+        setStatus(data)
+      }
+    } catch (err) {
+      toast.error('Erro ao buscar status.')
+    } finally {
+      setLoading(false)
     }
   }
 
-  const handleCopy = () => {
-    if (data?.referral_code) {
-      navigator.clipboard.writeText(`${origin}/?ref=${data.referral_code}`)
-      toast.success('Link copiado!')
+  const handleCopyLink = () => {
+    if (status?.referral_code) {
+      navigator.clipboard.writeText(`${origin}/?ref=${status.referral_code}`)
+      toast.success('Link copiado para a área de transferência!')
     }
   }
 
   return (
-    <div className="container max-w-4xl mx-auto px-4 py-16 animate-fade-in-up">
-      <div className="text-center mb-12">
-        <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight mb-4">
+    <div className="max-w-xl mx-auto px-4 py-20 min-h-[70vh]">
+      <div className="text-center mb-10 animate-fade-in-up">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-emerald-100 text-emerald-600 mb-6 shadow-sm">
+          <Trophy className="w-8 h-8" />
+        </div>
+        <h1 className="text-4xl font-extrabold text-slate-900 mb-4 tracking-tight">
           Status da Indicação
         </h1>
-        <p className="text-lg text-slate-500 max-w-2xl mx-auto">
-          Acompanhe quantas pessoas se cadastraram pelo seu link e garanta seus meses de acesso PRO
-          gratuito.
+        <p className="text-lg text-slate-600 font-medium">
+          Acompanhe quantas pessoas já entraram na lista através do seu link exclusivo.
         </p>
       </div>
 
-      {!data ? (
-        <Card className="max-w-md mx-auto shadow-sm border-slate-200">
-          <CardHeader>
-            <CardTitle>Consultar meu status</CardTitle>
-            <CardDescription>
-              Digite o e-mail que você usou no cadastro da lista de espera.
+      {!status ? (
+        <Card
+          className="border-slate-200 shadow-xl rounded-3xl animate-fade-in-up"
+          style={{ animationDelay: '100ms' }}
+        >
+          <CardHeader className="text-center pb-2">
+            <CardTitle className="text-2xl">Consultar meu progresso</CardTitle>
+            <CardDescription className="text-base">
+              Digite o e-mail que você usou para se cadastrar na lista de espera.
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSearch} className="flex gap-2">
-              <Input
-                type="email"
-                placeholder="seu@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-              <Button
-                type="submit"
-                disabled={loading}
-                className="bg-emerald-600 hover:bg-emerald-700 shrink-0"
-              >
-                {loading ? (
-                  <Search className="w-4 h-4 animate-spin" />
-                ) : (
-                  <ArrowRight className="w-4 h-4" />
-                )}
-              </Button>
-            </form>
+          <CardContent className="pt-4">
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input
+                          placeholder="seu@email.com"
+                          className="h-14 rounded-xl text-lg text-center"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage className="text-center" />
+                    </FormItem>
+                  )}
+                />
+                <Button
+                  type="submit"
+                  size="lg"
+                  className="w-full h-14 text-lg font-bold rounded-xl shadow-lg shadow-emerald-500/20"
+                  disabled={loading}
+                >
+                  {loading && <Loader2 className="w-5 h-5 mr-2 animate-spin" />}
+                  Ver Meu Status
+                </Button>
+              </form>
+            </Form>
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-8 max-w-2xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-md border-0">
-              <CardContent className="p-6 text-center">
-                <Trophy className="w-12 h-12 mx-auto mb-4 opacity-80" />
-                <h3 className="text-xl font-bold mb-1">Amigos Indicados</h3>
-                <p className="text-5xl font-extrabold">{data.referral_count || 0}</p>
-                <p className="text-emerald-100 text-sm mt-2">
-                  Continue indicando para ganhar o PRO!
+        <div className="space-y-6 animate-fade-in">
+          <Card className="border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50/50 shadow-xl rounded-3xl overflow-hidden">
+            <CardContent className="pt-8">
+              <div className="text-center mb-8">
+                <p className="text-sm font-bold text-emerald-600 uppercase tracking-widest mb-4">
+                  Seu Desempenho, {status.name.split(' ')[0]}!
                 </p>
-              </CardContent>
-            </Card>
+                <div className="flex flex-col items-center justify-center bg-white w-32 h-32 mx-auto rounded-full shadow-md border border-emerald-100 mb-4">
+                  <span className="text-5xl font-extrabold text-emerald-600">
+                    {status.referral_count}
+                  </span>
+                  <Users className="w-5 h-5 text-emerald-400 mt-1" />
+                </div>
+                <p className="text-slate-600 font-medium text-lg">
+                  amigos cadastrados pelo seu link
+                </p>
+              </div>
 
-            <Card className="shadow-sm border-slate-200">
-              <CardContent className="p-6">
-                <Users className="w-12 h-12 text-emerald-600 mb-4" />
-                <h3 className="text-xl font-bold text-slate-900 mb-1">Sua Posição</h3>
-                <p className="text-slate-600 text-sm mb-4">
-                  Você está na lista de espera. Quanto mais indicar, mais rápido terá acesso às
-                  novidades.
+              <div className="bg-white p-5 rounded-2xl border border-emerald-100 shadow-sm relative">
+                <p className="text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider text-center">
+                  Seu Link Exclusivo
                 </p>
+                <div className="flex items-center gap-2">
+                  <Input
+                    readOnly
+                    value={`${origin}/?ref=${status.referral_code}`}
+                    className="font-mono text-sm bg-slate-50 border-slate-200 text-slate-600 focus-visible:ring-emerald-500 text-center"
+                  />
+                  <Button
+                    size="icon"
+                    onClick={handleCopyLink}
+                    className="shrink-0 bg-emerald-600 hover:bg-emerald-700 shadow-md text-white"
+                  >
+                    <Copy className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+
+              <div className="mt-8 text-center">
                 <Button
-                  variant="outline"
-                  className="w-full text-slate-700"
-                  onClick={() => setData(null)}
+                  variant="ghost"
+                  onClick={() => setStatus(null)}
+                  className="text-slate-500 hover:text-slate-700 font-medium"
                 >
                   Consultar outro e-mail
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-
-          <Card className="shadow-sm border-slate-200 bg-slate-50">
-            <CardContent className="p-6">
-              <h3 className="font-bold text-slate-900 flex items-center gap-2 mb-4">
-                <Share2 className="w-5 h-5 text-emerald-600" /> Seu Link Exclusivo
-              </h3>
-              <div className="flex flex-col sm:flex-row items-center gap-3 bg-white p-3 rounded-md border border-slate-200">
-                <Input
-                  readOnly
-                  value={`${origin}/?ref=${data.referral_code}`}
-                  className="font-mono text-sm border-0 focus-visible:ring-0 px-2 bg-transparent"
-                />
-                <Button
-                  onClick={handleCopy}
-                  className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 shadow-sm shrink-0"
-                >
-                  <Copy className="w-4 h-4 mr-2" /> Copiar Link
                 </Button>
               </div>
             </CardContent>

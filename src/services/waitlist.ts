@@ -6,16 +6,13 @@ export async function joinWaitlist(
   phone: string,
   referred_by?: string | null,
 ) {
-  const payload: any = { name, email, phone }
-  if (referred_by) {
-    payload.referred_by = referred_by
-  }
-
-  const { data, error } = await supabase
-    .from('waitlist' as any)
-    .insert([payload])
-    .select()
-    .single()
+  // Use RPC to bypass RLS select restrictions and handle duplicates gracefully
+  const { data, error } = await supabase.rpc('join_waitlist' as any, {
+    p_name: name,
+    p_email: email,
+    p_phone: phone,
+    p_referred_by: referred_by || null,
+  })
 
   if (!error && data) {
     // Invoke edge function to send welcome email & whatsapp asynchronously
@@ -32,5 +29,10 @@ export async function joinWaitlist(
       .catch(console.error)
   }
 
+  return { data, error }
+}
+
+export async function getReferralStatus(email: string) {
+  const { data, error } = await supabase.rpc('get_referral_status' as any, { p_email: email })
   return { data, error }
 }
