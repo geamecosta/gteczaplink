@@ -231,7 +231,7 @@ export default function CreateLink() {
             </div>
             <div className="flex items-center gap-2">
               <div className="bg-slate-100 text-slate-600 text-xs font-bold px-3 py-3 rounded-xl border border-slate-200 shrink-0">
-                gteczap.link/
+                {typeof window !== 'undefined' ? `${window.location.host}/r/` : 'app/r/'}
               </div>
               <div className="relative flex-1">
                 <Input

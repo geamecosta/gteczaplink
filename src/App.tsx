@@ -8,6 +8,7 @@ import Layout from './components/Layout'
 import Dashboard from './pages/Dashboard'
 import ReferralStatus from './pages/ReferralStatus'
 import CreateLink from './pages/CreateLink'
+import Redirect from './pages/Redirect'
 import { AuthProvider } from '@/hooks/use-auth'
 
 const App = () => (
@@ -23,6 +24,7 @@ const App = () => (
             <Route path="/links/create" element={<CreateLink />} />
             <Route path="/status" element={<ReferralStatus />} />
           </Route>
+          <Route path="/r/:slug" element={<Redirect />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </TooltipProvider>

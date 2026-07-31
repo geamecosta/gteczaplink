@@ -44,6 +44,7 @@ import {
 import { toast } from 'sonner'
 import { format } from 'date-fns'
 import { cn } from '@/lib/utils'
+import { getShortUrl } from '@/lib/short-url'
 
 export default function Dashboard() {
   const { user } = useAuth()
@@ -77,7 +78,8 @@ export default function Dashboard() {
       id: item.id,
       destination_url: item.destination_url,
       short_slug: item.short_slug,
-      url: `https://gteczap.link/${item.short_slug}`,
+      url: getShortUrl(item.short_slug),
+      click_count: item.click_count || 0,
       title: item.title || 'Link Curto',
       tags: item.tags || [],
       utm_source: item.utm_source,
@@ -97,6 +99,7 @@ export default function Dashboard() {
       title: 'WhatsApp Direto',
       tags: ['whatsapp'],
       created_at: item.created_at,
+      click_count: 0,
       is_custom: false,
     }))
 
@@ -415,6 +418,7 @@ export default function Dashboard() {
 // --- TAB COMPONENTS ---
 
 function HomeTab({ user, leads, links, navigate, setActiveTab }: any) {
+  const totalClicks = links.reduce((sum: number, l: any) => sum + (l.click_count || 0), 0)
   return (
     <div className="space-y-10 animate-fade-in-up">
       <div>
@@ -430,7 +434,12 @@ function HomeTab({ user, leads, links, navigate, setActiveTab }: any) {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
         <StatCard title="Links Ativos" value={links.length} icon={LinkIcon} trend="+2 hoje" />
         <StatCard title="Leads Capturados" value={leads.length} icon={Users} trend="Crescendo" />
-        <StatCard title="Cliques Totais" value={links.length * 24} icon={BarChart3} trend="+18%" />
+        <StatCard
+          title="Cliques Totais"
+          value={totalClicks}
+          icon={BarChart3}
+          trend={totalClicks > 0 ? 'Ao vivo' : 'Sem dados'}
+        />
       </div>
 
       {/* Quick Create Cards */}
@@ -572,6 +581,9 @@ function LinksTab({ links, handleCopy, handleDeleteLink, navigate, onOpenQrCode 
               <TableHead className="font-extrabold text-slate-700 h-14">Título / Destino</TableHead>
               <TableHead className="font-extrabold text-slate-700 h-14">Link Curto</TableHead>
               <TableHead className="font-extrabold text-slate-700 h-14">Tags & Extras</TableHead>
+              <TableHead className="font-extrabold text-slate-700 h-14 text-center">
+                Cliques
+              </TableHead>
               <TableHead className="font-extrabold text-slate-700 h-14">Criado em</TableHead>
               <TableHead className="text-right font-extrabold text-slate-700 h-14">Ações</TableHead>
             </TableRow>
@@ -579,7 +591,7 @@ function LinksTab({ links, handleCopy, handleDeleteLink, navigate, onOpenQrCode 
           <TableBody>
             {links.length === 0 && (
               <TableRow className="hover:bg-transparent">
-                <TableCell colSpan={5} className="text-center py-16">
+                <TableCell colSpan={6} className="text-center py-16">
                   <div className="flex flex-col items-center justify-center text-slate-500">
                     <LinkIcon className="w-12 h-12 mb-4 text-slate-300" />
                     <p className="text-lg font-medium text-slate-900 mb-1">Nenhum link gerado</p>
@@ -633,6 +645,11 @@ function LinksTab({ links, handleCopy, handleDeleteLink, navigate, onOpenQrCode 
                       </Badge>
                     )}
                   </div>
+                </TableCell>
+                <TableCell className="text-center">
+                  <span className="inline-flex items-center justify-center font-extrabold px-3 py-1.5 rounded-full text-sm bg-emerald-50 text-emerald-700">
+                    {link.click_count || 0}
+                  </span>
                 </TableCell>
                 <TableCell className="text-slate-500 font-medium text-xs">
                   {format(new Date(link.created_at), 'dd/MM/yyyy')}

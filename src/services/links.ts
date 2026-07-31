@@ -103,3 +103,23 @@ export async function deleteUserLink(id: string) {
   const { error } = await supabase.from('links').delete().eq('id', id)
   return { error }
 }
+
+export async function getLinkBySlug(slug: string) {
+  const { data, error } = await supabase
+    .from('links')
+    .select('*')
+    .eq('short_slug', slug)
+    .maybeSingle()
+  return { data, error }
+}
+
+export async function recordClick(slug: string) {
+  const { error } = await supabase.rpc('increment_link_click', { p_slug: slug })
+  return { error }
+}
+
+export async function getTotalClicks(): Promise<number> {
+  const { data, error } = await supabase.from('links').select('click_count')
+  if (error || !data) return 0
+  return data.reduce((sum: number, item: any) => sum + (item.click_count || 0), 0)
+}

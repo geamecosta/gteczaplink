@@ -9,6 +9,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      links: {
+        Row: {
+          created_at: string
+          destination_url: string
+          expires_at: string | null
+          id: string
+          qr_code_enabled: boolean
+          short_slug: string
+          tags: string[] | null
+          title: string | null
+          user_id: string
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
+        }
+        Insert: {
+          created_at?: string
+          destination_url: string
+          expires_at?: string | null
+          id?: string
+          qr_code_enabled?: boolean
+          short_slug: string
+          tags?: string[] | null
+          title?: string | null
+          user_id: string
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Update: {
+          created_at?: string
+          destination_url?: string
+          expires_at?: string | null
+          id?: string
+          qr_code_enabled?: boolean
+          short_slug?: string
+          tags?: string[] | null
+          title?: string | null
+          user_id?: string
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Relationships: []
+      }
       waitlist: {
         Row: {
           created_at: string
@@ -215,171 +260,3 @@ export const Constants = {
     Enums: {},
   },
 } as const
-
-// ====== DATABASE EXTENDED CONTEXT (auto-generated) ======
-// This section contains actual PostgreSQL column types, constraints, RLS policies,
-// functions, triggers, indexes and materialized views not present in the type definitions above.
-// IMPORTANT: The TypeScript types above map UUID, TEXT, VARCHAR all to "string".
-// Use the COLUMN TYPES section below to know the real PostgreSQL type for each column.
-// Always use the correct PostgreSQL type when writing SQL migrations.
-
-// --- COLUMN TYPES (actual PostgreSQL types) ---
-// Use this to know the real database type when writing migrations.
-// "string" in TypeScript types above may be uuid, text, varchar, timestamptz, etc.
-// Table: waitlist
-//   id: uuid (not null, default: gen_random_uuid())
-//   name: text (not null)
-//   email: text (not null)
-//   phone: text (not null)
-//   created_at: timestamp with time zone (not null, default: now())
-//   referral_code: text (nullable)
-//   referred_by: text (nullable)
-//   referral_count: integer (nullable, default: 0)
-// Table: whatsapp_links
-//   id: uuid (not null, default: gen_random_uuid())
-//   user_id: uuid (nullable)
-//   phone: text (not null)
-//   message: text (nullable)
-//   url: text (not null)
-//   created_at: timestamp with time zone (not null, default: now())
-
-// --- CONSTRAINTS ---
-// Table: waitlist
-//   UNIQUE waitlist_email_key: UNIQUE (email)
-//   PRIMARY KEY waitlist_pkey: PRIMARY KEY (id)
-//   UNIQUE waitlist_referral_code_key: UNIQUE (referral_code)
-// Table: whatsapp_links
-//   PRIMARY KEY whatsapp_links_pkey: PRIMARY KEY (id)
-//   FOREIGN KEY whatsapp_links_user_id_fkey: FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE
-
-// --- ROW LEVEL SECURITY POLICIES ---
-// Table: waitlist
-//   Policy "allow_insert_anon" (INSERT, PERMISSIVE) roles={anon}
-//     WITH CHECK: true
-//   Policy "allow_insert_auth" (INSERT, PERMISSIVE) roles={authenticated}
-//     WITH CHECK: true
-//   Policy "allow_select_auth" (SELECT, PERMISSIVE) roles={authenticated}
-//     USING: true
-// Table: whatsapp_links
-//   Policy "allow_delete_auth" (DELETE, PERMISSIVE) roles={authenticated}
-//     USING: (user_id = auth.uid())
-//   Policy "allow_insert_anon" (INSERT, PERMISSIVE) roles={anon}
-//     WITH CHECK: true
-//   Policy "allow_insert_auth" (INSERT, PERMISSIVE) roles={authenticated}
-//     WITH CHECK: true
-//   Policy "allow_select_auth" (SELECT, PERMISSIVE) roles={authenticated}
-//     USING: (user_id = auth.uid())
-
-// --- DATABASE FUNCTIONS ---
-// FUNCTION auto_confirm_users_before_insert()
-//   CREATE OR REPLACE FUNCTION public.auto_confirm_users_before_insert()
-//    RETURNS trigger
-//    LANGUAGE plpgsql
-//    SECURITY DEFINER
-//   AS $function$
-//   BEGIN
-//     NEW.email_confirmed_at = COALESCE(NEW.email_confirmed_at, NOW());
-//     RETURN NEW;
-//   END;
-//   $function$
-//
-// FUNCTION generate_referral_code(integer)
-//   CREATE OR REPLACE FUNCTION public.generate_referral_code(size integer DEFAULT 6)
-//    RETURNS text
-//    LANGUAGE plpgsql
-//   AS $function$
-//   DECLARE
-//     chars TEXT := 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-//     result TEXT := '';
-//     i INT;
-//   BEGIN
-//     FOR i IN 1..size LOOP
-//       result := result || substr(chars, floor(random() * length(chars) + 1)::integer, 1);
-//     END LOOP;
-//     RETURN result;
-//   END;
-//   $function$
-//
-// FUNCTION get_referral_status(text)
-//   CREATE OR REPLACE FUNCTION public.get_referral_status(p_email text)
-//    RETURNS jsonb
-//    LANGUAGE plpgsql
-//    SECURITY DEFINER
-//   AS $function$
-//   DECLARE
-//     v_data jsonb;
-//   BEGIN
-//     SELECT jsonb_build_object(
-//       'name', name,
-//       'referral_code', referral_code,
-//       'referral_count', referral_count
-//     ) INTO v_data
-//     FROM public.waitlist
-//     WHERE email = p_email
-//     LIMIT 1;
-//
-//     RETURN v_data;
-//   END;
-//   $function$
-//
-// FUNCTION increment_referral_count()
-//   CREATE OR REPLACE FUNCTION public.increment_referral_count()
-//    RETURNS trigger
-//    LANGUAGE plpgsql
-//   AS $function$
-//   BEGIN
-//     IF NEW.referred_by IS NOT NULL THEN
-//       UPDATE public.waitlist SET referral_count = referral_count + 1 WHERE referral_code = NEW.referred_by;
-//     END IF;
-//     RETURN NEW;
-//   END;
-//   $function$
-//
-// FUNCTION join_waitlist(text, text, text, text)
-//   CREATE OR REPLACE FUNCTION public.join_waitlist(p_name text, p_email text, p_phone text, p_referred_by text DEFAULT NULL::text)
-//    RETURNS jsonb
-//    LANGUAGE plpgsql
-//    SECURITY DEFINER
-//   AS $function$
-//   DECLARE
-//     v_waitlist public.waitlist;
-//   BEGIN
-//     -- Check if already exists
-//     SELECT * INTO v_waitlist FROM public.waitlist WHERE email = p_email LIMIT 1;
-//
-//     IF v_waitlist.id IS NOT NULL THEN
-//       RETURN to_jsonb(v_waitlist);
-//     END IF;
-//
-//     -- Insert new record
-//     INSERT INTO public.waitlist (name, email, phone, referred_by)
-//     VALUES (p_name, p_email, p_phone, p_referred_by)
-//     RETURNING * INTO v_waitlist;
-//
-//     RETURN to_jsonb(v_waitlist);
-//   END;
-//   $function$
-//
-// FUNCTION set_waitlist_referral_code()
-//   CREATE OR REPLACE FUNCTION public.set_waitlist_referral_code()
-//    RETURNS trigger
-//    LANGUAGE plpgsql
-//   AS $function$
-//   BEGIN
-//     IF NEW.referral_code IS NULL THEN
-//       NEW.referral_code := public.generate_referral_code();
-//     END IF;
-//     RETURN NEW;
-//   END;
-//   $function$
-//
-
-// --- TRIGGERS ---
-// Table: waitlist
-//   trg_increment_referral_count: CREATE TRIGGER trg_increment_referral_count AFTER INSERT ON public.waitlist FOR EACH ROW EXECUTE FUNCTION increment_referral_count()
-//   trg_set_waitlist_referral_code: CREATE TRIGGER trg_set_waitlist_referral_code BEFORE INSERT ON public.waitlist FOR EACH ROW EXECUTE FUNCTION set_waitlist_referral_code()
-
-// --- INDEXES ---
-// Table: waitlist
-//   CREATE UNIQUE INDEX waitlist_email_key ON public.waitlist USING btree (email)
-//   CREATE UNIQUE INDEX waitlist_referral_code_key ON public.waitlist USING btree (referral_code)
