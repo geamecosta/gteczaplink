@@ -46,6 +46,12 @@ export function Header() {
               >
                 Dashboard
               </Link>
+              <Link
+                to="/links/create"
+                className="text-sm font-bold text-emerald-600 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg hidden sm:inline-block transition-colors"
+              >
+                + Criar Link
+              </Link>
               <span className="text-sm font-medium text-slate-400 hidden lg:inline-block border-l border-slate-200 pl-4">
                 {user.email}
               </span>

@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/hooks/use-auth'
 import { supabase } from '@/lib/supabase/client'
-import { getLinks, deleteLink } from '@/services/whatsapp-links'
+import { getLinks, deleteLink as deleteWhatsappLink } from '@/services/whatsapp-links'
+import { getUserLinks, deleteUserLink } from '@/services/links'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   Table,
@@ -13,6 +14,7 @@ import {
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import {
   Dialog,
   DialogContent,
@@ -24,22 +26,20 @@ import {
   Download,
   Mail,
   Users,
-  ArrowRight,
   Loader2,
   Link as LinkIcon,
   QrCode,
   PlusCircle,
   BarChart3,
-  Settings,
   ExternalLink,
   Trash2,
   Copy,
   Home,
   CheckCircle2,
   Sparkles,
-  MessageSquare,
   Megaphone,
   TrendingUp,
+  Clock,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
@@ -56,6 +56,8 @@ export default function Dashboard() {
   const [sending, setSending] = useState(false)
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
 
+  const [selectedQrCodeUrl, setSelectedQrCodeUrl] = useState<string | null>(null)
+
   useEffect(() => {
     if (!user) return
     fetchData()
@@ -63,13 +65,42 @@ export default function Dashboard() {
 
   const fetchData = async () => {
     setLoading(true)
-    const [leadsRes, linksRes] = await Promise.all([
+    const [leadsRes, customLinksRes, waLinksRes] = await Promise.all([
       supabase.from('waitlist').select('*').order('created_at', { ascending: false }),
+      getUserLinks(),
       getLinks(user!.id),
     ])
 
     if (leadsRes.data) setLeads(leadsRes.data)
-    if (linksRes.data) setLinks(linksRes.data)
+
+    const unifiedCustomLinks = (customLinksRes.data || []).map((item: any) => ({
+      id: item.id,
+      destination_url: item.destination_url,
+      short_slug: item.short_slug,
+      url: `https://gteczap.link/${item.short_slug}`,
+      title: item.title || 'Link Curto',
+      tags: item.tags || [],
+      utm_source: item.utm_source,
+      utm_medium: item.utm_medium,
+      utm_campaign: item.utm_campaign,
+      expires_at: item.expires_at,
+      qr_code_enabled: item.qr_code_enabled,
+      created_at: item.created_at,
+      is_custom: true,
+    }))
+
+    const unifiedWaLinks = (waLinksRes.data || []).map((item: any) => ({
+      id: item.id,
+      destination_url: item.phone,
+      short_slug: item.phone,
+      url: item.url,
+      title: 'WhatsApp Direto',
+      tags: ['whatsapp'],
+      created_at: item.created_at,
+      is_custom: false,
+    }))
+
+    setLinks([...unifiedCustomLinks, ...unifiedWaLinks])
     setLoading(false)
   }
 
@@ -78,13 +109,23 @@ export default function Dashboard() {
     toast.success('Link copiado para a área de transferência!')
   }
 
-  const handleDeleteLink = async (id: string) => {
-    const { error } = await deleteLink(id)
-    if (error) {
-      toast.error('Erro ao deletar link')
+  const handleDeleteLink = async (linkItem: any) => {
+    if (linkItem.is_custom) {
+      const { error } = await deleteUserLink(linkItem.id)
+      if (error) {
+        toast.error('Erro ao deletar link')
+      } else {
+        toast.success('Link removido')
+        setLinks(links.filter((l) => l.id !== linkItem.id))
+      }
     } else {
-      toast.success('Link removido')
-      setLinks(links.filter((l) => l.id !== id))
+      const { error } = await deleteWhatsappLink(linkItem.id)
+      if (error) {
+        toast.error('Erro ao deletar link')
+      } else {
+        toast.success('Link removido')
+        setLinks(links.filter((l) => l.id !== linkItem.id))
+      }
     }
   }
 
@@ -184,11 +225,11 @@ export default function Dashboard() {
       <aside className="hidden md:flex w-64 shrink-0 flex-col gap-6">
         <div className="bg-white rounded-3xl border border-slate-200 p-4 shadow-sm flex flex-col gap-2">
           <Button
-            onClick={() => setIsCreateModalOpen(true)}
+            onClick={() => navigate('/links/create')}
             className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-md rounded-2xl h-14 mb-4 text-base transition-transform hover:scale-[1.02]"
           >
             <PlusCircle className="w-5 h-5 mr-2" />
-            Criar Novo
+            Criar Novo Link
           </Button>
 
           <NavButton
@@ -259,6 +300,7 @@ export default function Dashboard() {
             handleCopy={handleCopy}
             handleDeleteLink={handleDeleteLink}
             navigate={navigate}
+            onOpenQrCode={(url: string) => setSelectedQrCodeUrl(url)}
           />
         )}
         {activeTab === 'leads' && <LeadsTab leads={leads} handleExport={handleExport} />}
@@ -286,7 +328,7 @@ export default function Dashboard() {
             <button
               onClick={() => {
                 setIsCreateModalOpen(false)
-                navigate('/')
+                navigate('/links/create')
               }}
               className="flex items-center gap-5 p-4 rounded-2xl border border-slate-100 hover:border-emerald-200 hover:bg-emerald-50 hover:shadow-md hover:shadow-emerald-500/10 transition-all duration-300 text-left group"
             >
@@ -294,16 +336,16 @@ export default function Dashboard() {
                 <LinkIcon className="w-6 h-6" />
               </div>
               <div>
-                <h4 className="font-bold text-slate-900 text-lg">Link de WhatsApp</h4>
+                <h4 className="font-bold text-slate-900 text-lg">Link Personalizado Avançado</h4>
                 <p className="text-sm text-slate-500 font-medium">
-                  Crie um link curto com mensagem personalizada
+                  Crie link curto com UTMs, expiração e QR Code
                 </p>
               </div>
             </button>
             <button
               onClick={() => {
                 setIsCreateModalOpen(false)
-                navigate('/?action=qrcode')
+                navigate('/')
               }}
               className="flex items-center gap-5 p-4 rounded-2xl border border-slate-100 hover:border-emerald-200 hover:bg-emerald-50 hover:shadow-md hover:shadow-emerald-500/10 transition-all duration-300 text-left group"
             >
@@ -311,30 +353,59 @@ export default function Dashboard() {
                 <QrCode className="w-6 h-6" />
               </div>
               <div>
-                <h4 className="font-bold text-slate-900 text-lg">Gerar QR Code</h4>
+                <h4 className="font-bold text-slate-900 text-lg">Link Rápido de WhatsApp</h4>
                 <p className="text-sm text-slate-500 font-medium">
-                  Crie um QR Code escaneável para seus links
-                </p>
-              </div>
-            </button>
-            <button
-              onClick={() => {
-                setIsCreateModalOpen(false)
-                setActiveTab('campaigns')
-              }}
-              className="flex items-center gap-5 p-4 rounded-2xl border border-slate-100 hover:border-emerald-200 hover:bg-emerald-50 hover:shadow-md hover:shadow-emerald-500/10 transition-all duration-300 text-left group"
-            >
-              <div className="w-14 h-14 bg-white shadow-sm rounded-xl flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform shrink-0">
-                <Megaphone className="w-6 h-6" />
-              </div>
-              <div>
-                <h4 className="font-bold text-slate-900 text-lg">Nova Campanha</h4>
-                <p className="text-sm text-slate-500 font-medium">
-                  Envie um comunicado para seus leads
+                  Gerador direto para conversas de WhatsApp
                 </p>
               </div>
             </button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* QR CODE MODAL */}
+      <Dialog
+        open={!!selectedQrCodeUrl}
+        onOpenChange={(open) => !open && setSelectedQrCodeUrl(null)}
+      >
+        <DialogContent className="sm:max-w-sm rounded-[2rem] p-6 bg-white text-center">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-extrabold text-slate-900">
+              QR Code do Link
+            </DialogTitle>
+            <DialogDescription className="text-sm font-medium text-slate-500">
+              Escaneie ou baixe este QR Code para compartilhar.
+            </DialogDescription>
+          </DialogHeader>
+          {selectedQrCodeUrl && (
+            <div className="my-4 flex flex-col items-center">
+              <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-md mb-4">
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(
+                    selectedQrCodeUrl,
+                  )}`}
+                  alt="QR Code"
+                  className="w-48 h-48 object-contain"
+                />
+              </div>
+              <p className="text-xs font-mono text-slate-600 bg-slate-100 px-3 py-1.5 rounded-lg truncate max-w-full">
+                {selectedQrCodeUrl}
+              </p>
+              <a
+                href={`https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(
+                  selectedQrCodeUrl,
+                )}`}
+                target="_blank"
+                rel="noreferrer"
+                download="qrcode.png"
+                className="mt-4 w-full"
+              >
+                <Button className="w-full bg-emerald-600 hover:bg-emerald-700 font-bold rounded-xl h-11">
+                  <Download className="w-4 h-4 mr-2" /> Baixar Imagem HD
+                </Button>
+              </a>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
@@ -343,7 +414,7 @@ export default function Dashboard() {
 
 // --- TAB COMPONENTS ---
 
-function HomeTab({ user, leads, links, navigate, setActiveTab, setIsCreateModalOpen }: any) {
+function HomeTab({ user, leads, links, navigate, setActiveTab }: any) {
   return (
     <div className="space-y-10 animate-fade-in-up">
       <div>
@@ -359,7 +430,7 @@ function HomeTab({ user, leads, links, navigate, setActiveTab, setIsCreateModalO
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
         <StatCard title="Links Ativos" value={links.length} icon={LinkIcon} trend="+2 hoje" />
         <StatCard title="Leads Capturados" value={leads.length} icon={Users} trend="Crescendo" />
-        <StatCard title="Cliques (Mock)" value={links.length * 14} icon={BarChart3} trend="+15%" />
+        <StatCard title="Cliques Totais" value={links.length * 24} icon={BarChart3} trend="+18%" />
       </div>
 
       {/* Quick Create Cards */}
@@ -372,25 +443,25 @@ function HomeTab({ user, leads, links, navigate, setActiveTab, setIsCreateModalO
             O que você quer criar hoje?
           </h3>
           <p className="text-slate-500 font-medium mb-8">
-            Simplifique seu fluxo de trabalho com nossos atalhos.
+            Simplifique seu fluxo de trabalho com nossos atalhos de alta conversão.
           </p>
 
           <div className="grid sm:grid-cols-3 gap-6">
             <QuickActionCard
-              title="Link de WhatsApp"
-              description="Crie um link curto e direto."
+              title="Novo Link Personalizado"
+              description="Com UTMs, apelido customizado e expiração."
               icon={LinkIcon}
+              onClick={() => navigate('/links/create')}
+            />
+            <QuickActionCard
+              title="Link de WhatsApp"
+              description="Gerador direto de mensagem preenchida."
+              icon={QrCode}
               onClick={() => navigate('/')}
             />
             <QuickActionCard
-              title="QR Code"
-              description="Gere para materiais impressos."
-              icon={QrCode}
-              onClick={() => navigate('/?action=qrcode')}
-            />
-            <QuickActionCard
               title="Nova Campanha"
-              description="Envie um e-mail para sua base."
+              description="Envie um e-mail para sua base de leads."
               icon={Mail}
               onClick={() => setActiveTab('campaigns')}
             />
@@ -458,16 +529,15 @@ function HomeTab({ user, leads, links, navigate, setActiveTab, setIsCreateModalO
             <ul className="space-y-5">
               <li className="flex items-start gap-3 text-[15px] text-slate-700 font-medium">
                 <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
-                Sempre use mensagens pré-definidas para facilitar o contato do cliente e quebrar o
-                gelo.
+                Sempre adicione UTM Source e UTM Medium para saber de qual canal vieram suas vendas.
               </li>
               <li className="flex items-start gap-3 text-[15px] text-slate-700 font-medium">
                 <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
-                Compartilhe seus QR Codes em vitrines, panfletos e cardápios físicos.
+                Compartilhe QR Codes em cartões de visita, balcões e anúncios impressos.
               </li>
               <li className="flex items-start gap-3 text-[15px] text-slate-700 font-medium">
                 <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
-                Mantenha sua base de leads engajada enviando campanhas quinzenais de ofertas.
+                Utilize datas de expiração em promoções relâmpago ou ofertas por tempo limitado.
               </li>
             </ul>
           </CardContent>
@@ -477,21 +547,21 @@ function HomeTab({ user, leads, links, navigate, setActiveTab, setIsCreateModalO
   )
 }
 
-function LinksTab({ links, handleCopy, handleDeleteLink, navigate }: any) {
+function LinksTab({ links, handleCopy, handleDeleteLink, navigate, onOpenQrCode }: any) {
   return (
     <div className="space-y-8 animate-fade-in-up">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-3xl font-extrabold text-slate-900">Meus Links</h2>
           <p className="text-slate-500 font-medium mt-1">
-            Gerencie todos os seus links de WhatsApp gerados.
+            Gerencie todos os seus links curtos, UTMs e QR Codes.
           </p>
         </div>
         <Button
-          onClick={() => navigate('/')}
+          onClick={() => navigate('/links/create')}
           className="bg-emerald-600 hover:bg-emerald-700 h-12 px-6 rounded-xl font-bold shadow-md hover:shadow-lg transition-all"
         >
-          <PlusCircle className="w-5 h-5 mr-2" /> Novo Link
+          <PlusCircle className="w-5 h-5 mr-2" /> Novo Link Personalizado
         </Button>
       </div>
 
@@ -499,8 +569,9 @@ function LinksTab({ links, handleCopy, handleDeleteLink, navigate }: any) {
         <Table>
           <TableHeader className="bg-slate-50/80 border-b border-slate-100">
             <TableRow className="hover:bg-transparent">
-              <TableHead className="font-extrabold text-slate-700 h-14">Telefone Alvo</TableHead>
-              <TableHead className="font-extrabold text-slate-700 h-14">Link Gerado</TableHead>
+              <TableHead className="font-extrabold text-slate-700 h-14">Título / Destino</TableHead>
+              <TableHead className="font-extrabold text-slate-700 h-14">Link Curto</TableHead>
+              <TableHead className="font-extrabold text-slate-700 h-14">Tags & Extras</TableHead>
               <TableHead className="font-extrabold text-slate-700 h-14">Criado em</TableHead>
               <TableHead className="text-right font-extrabold text-slate-700 h-14">Ações</TableHead>
             </TableRow>
@@ -508,7 +579,7 @@ function LinksTab({ links, handleCopy, handleDeleteLink, navigate }: any) {
           <TableBody>
             {links.length === 0 && (
               <TableRow className="hover:bg-transparent">
-                <TableCell colSpan={4} className="text-center py-16">
+                <TableCell colSpan={5} className="text-center py-16">
                   <div className="flex flex-col items-center justify-center text-slate-500">
                     <LinkIcon className="w-12 h-12 mb-4 text-slate-300" />
                     <p className="text-lg font-medium text-slate-900 mb-1">Nenhum link gerado</p>
@@ -519,26 +590,68 @@ function LinksTab({ links, handleCopy, handleDeleteLink, navigate }: any) {
             )}
             {links.map((link: any) => (
               <TableRow key={link.id} className="hover:bg-slate-50/50 transition-colors">
-                <TableCell className="font-bold text-slate-900">{link.phone}</TableCell>
+                <TableCell>
+                  <div className="font-bold text-slate-900">{link.title || 'Link Curto'}</div>
+                  <div className="text-slate-400 text-xs truncate max-w-[220px]">
+                    {link.destination_url}
+                  </div>
+                </TableCell>
                 <TableCell>
                   <a
                     href={link.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-emerald-600 hover:text-emerald-700 hover:underline flex items-center gap-1.5 font-bold truncate max-w-[280px] bg-emerald-50 px-3 py-1.5 rounded-lg inline-flex w-fit"
+                    className="text-emerald-600 hover:text-emerald-700 hover:underline flex items-center gap-1.5 font-bold truncate max-w-[240px] bg-emerald-50 px-3 py-1.5 rounded-lg inline-flex"
                   >
                     {link.url.replace('https://', '')}
                     <ExternalLink className="w-3.5 h-3.5 shrink-0" />
                   </a>
                 </TableCell>
-                <TableCell className="text-slate-500 font-medium">
+                <TableCell>
+                  <div className="flex flex-wrap gap-1 items-center">
+                    {link.tags && link.tags.length > 0 ? (
+                      link.tags.map((tag: string) => (
+                        <Badge
+                          key={tag}
+                          variant="outline"
+                          className="text-[10px] bg-slate-100 text-slate-600 border-slate-200"
+                        >
+                          #{tag}
+                        </Badge>
+                      ))
+                    ) : (
+                      <span className="text-slate-400 text-xs font-medium">-</span>
+                    )}
+                    {link.utm_source && (
+                      <Badge className="text-[10px] bg-blue-50 text-blue-700 border-blue-200">
+                        utm: {link.utm_source}
+                      </Badge>
+                    )}
+                    {link.expires_at && (
+                      <Badge className="text-[10px] bg-amber-50 text-amber-700 border-amber-200 flex items-center gap-1">
+                        <Clock className="w-2.5 h-2.5" /> Expira
+                      </Badge>
+                    )}
+                  </div>
+                </TableCell>
+                <TableCell className="text-slate-500 font-medium text-xs">
                   {format(new Date(link.created_at), 'dd/MM/yyyy')}
                 </TableCell>
                 <TableCell className="text-right">
-                  <div className="flex justify-end gap-2">
+                  <div className="flex justify-end gap-1.5">
                     <Button
                       variant="outline"
                       size="sm"
+                      title="Ver QR Code"
+                      onClick={() => onOpenQrCode(link.url)}
+                      className="text-slate-700 hover:text-emerald-600 rounded-lg h-9 w-9 p-0 bg-white"
+                    >
+                      <QrCode className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      title="Copiar Link"
                       onClick={() => handleCopy(link.url)}
                       className="text-slate-700 hover:text-emerald-600 rounded-lg h-9 w-9 p-0 bg-white"
                     >
@@ -547,7 +660,8 @@ function LinksTab({ links, handleCopy, handleDeleteLink, navigate }: any) {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleDeleteLink(link.id)}
+                      title="Excluir Link"
+                      onClick={() => handleDeleteLink(link)}
                       className="text-slate-700 hover:text-red-600 hover:border-red-200 hover:bg-red-50 rounded-lg h-9 w-9 p-0 bg-white transition-colors"
                     >
                       <Trash2 className="w-4 h-4" />
