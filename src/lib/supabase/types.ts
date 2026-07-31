@@ -9,8 +9,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      link_clicks: {
+        Row: {
+          clicked_at: string
+          id: string
+          link_id: string | null
+          referrer: string | null
+          short_slug: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          clicked_at?: string
+          id?: string
+          link_id?: string | null
+          referrer?: string | null
+          short_slug?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          clicked_at?: string
+          id?: string
+          link_id?: string | null
+          referrer?: string | null
+          short_slug?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'link_clicks_link_id_fkey'
+            columns: ['link_id']
+            isOneToOne: false
+            referencedRelation: 'links'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       links: {
         Row: {
+          click_count: number
           created_at: string
           destination_url: string
           expires_at: string | null
@@ -25,6 +61,7 @@ export type Database = {
           utm_source: string | null
         }
         Insert: {
+          click_count?: number
           created_at?: string
           destination_url: string
           expires_at?: string | null
@@ -39,6 +76,7 @@ export type Database = {
           utm_source?: string | null
         }
         Update: {
+          click_count?: number
           created_at?: string
           destination_url?: string
           expires_at?: string | null
@@ -121,6 +159,7 @@ export type Database = {
     Functions: {
       generate_referral_code: { Args: { size?: number }; Returns: string }
       get_referral_status: { Args: { p_email: string }; Returns: Json }
+      increment_link_click: { Args: { p_slug: string }; Returns: undefined }
       join_waitlist: {
         Args: {
           p_email: string

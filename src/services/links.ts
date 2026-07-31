@@ -123,3 +123,56 @@ export async function getTotalClicks(): Promise<number> {
   if (error || !data) return 0
   return data.reduce((sum: number, item: any) => sum + (item.click_count || 0), 0)
 }
+
+export async function getLinkClicksForUser() {
+  const { data, error } = await supabase
+    .from('link_clicks')
+    .select('clicked_at')
+    .order('clicked_at', { ascending: true })
+  return { data: data || [], error }
+}
+
+export async function updateLink(
+  id: string,
+  payload: {
+    title?: string | null
+    destination_url: string
+    utm_source?: string | null
+    utm_medium?: string | null
+    utm_campaign?: string | null
+  },
+) {
+  let finalDestinationUrl = payload.destination_url.trim()
+  try {
+    const urlToCheck =
+      finalDestinationUrl.startsWith('http://') || finalDestinationUrl.startsWith('https://')
+        ? finalDestinationUrl
+        : `https://${finalDestinationUrl}`
+    const urlObj = new URL(urlToCheck)
+    urlObj.searchParams.delete('utm_source')
+    urlObj.searchParams.delete('utm_medium')
+    urlObj.searchParams.delete('utm_campaign')
+    if (payload.utm_source?.trim()) urlObj.searchParams.set('utm_source', payload.utm_source.trim())
+    if (payload.utm_medium?.trim()) urlObj.searchParams.set('utm_medium', payload.utm_medium.trim())
+    if (payload.utm_campaign?.trim())
+      urlObj.searchParams.set('utm_campaign', payload.utm_campaign.trim())
+    finalDestinationUrl = urlObj.toString()
+  } catch {
+    // keep raw string if URL parsing fails
+  }
+
+  const { data, error } = await supabase
+    .from('links')
+    .update({
+      title: payload.title?.trim() || null,
+      destination_url: finalDestinationUrl,
+      utm_source: payload.utm_source?.trim() || null,
+      utm_medium: payload.utm_medium?.trim() || null,
+      utm_campaign: payload.utm_campaign?.trim() || null,
+    })
+    .eq('id', id)
+    .select()
+    .single()
+
+  return { data, error }
+}

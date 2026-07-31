@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react'
 import { useAuth } from '@/hooks/use-auth'
 import { supabase } from '@/lib/supabase/client'
 import { getLinks, deleteLink as deleteWhatsappLink } from '@/services/whatsapp-links'
-import { getUserLinks, deleteUserLink } from '@/services/links'
+import { getUserLinks, deleteUserLink, getLinkClicksForUser } from '@/services/links'
+import { ClickEvolutionChart } from '@/components/dashboard/ClickEvolutionChart'
+import { EditLinkDialog } from '@/components/dashboard/EditLinkDialog'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   Table,
@@ -40,6 +42,7 @@ import {
   Megaphone,
   TrendingUp,
   Clock,
+  Pencil,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
@@ -58,6 +61,9 @@ export default function Dashboard() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
 
   const [selectedQrCodeUrl, setSelectedQrCodeUrl] = useState<string | null>(null)
+  const [clicks, setClicks] = useState<any[]>([])
+  const [editLink, setEditLink] = useState<any | null>(null)
+  const [isEditOpen, setIsEditOpen] = useState(false)
 
   useEffect(() => {
     if (!user) return
@@ -66,13 +72,15 @@ export default function Dashboard() {
 
   const fetchData = async () => {
     setLoading(true)
-    const [leadsRes, customLinksRes, waLinksRes] = await Promise.all([
+    const [leadsRes, customLinksRes, waLinksRes, clicksRes] = await Promise.all([
       supabase.from('waitlist').select('*').order('created_at', { ascending: false }),
       getUserLinks(),
       getLinks(user!.id),
+      getLinkClicksForUser(),
     ])
 
     if (leadsRes.data) setLeads(leadsRes.data)
+    if (clicksRes.data) setClicks(clicksRes.data)
 
     const unifiedCustomLinks = (customLinksRes.data || []).map((item: any) => ({
       id: item.id,
@@ -169,6 +177,24 @@ export default function Dashboard() {
     } finally {
       setSending(false)
     }
+  }
+
+  const handleEditSaved = (updatedLink: any) => {
+    setLinks(
+      links.map((l) => {
+        if (l.id === updatedLink.id) {
+          return {
+            ...l,
+            title: updatedLink.title || 'Link Curto',
+            destination_url: updatedLink.destination_url,
+            utm_source: updatedLink.utm_source,
+            utm_medium: updatedLink.utm_medium,
+            utm_campaign: updatedLink.utm_campaign,
+          }
+        }
+        return l
+      }),
+    )
   }
 
   if (!user) {
@@ -292,6 +318,7 @@ export default function Dashboard() {
             user={user}
             leads={leads}
             links={links}
+            clicks={clicks}
             navigate={navigate}
             setActiveTab={setActiveTab}
             setIsCreateModalOpen={setIsCreateModalOpen}
@@ -304,6 +331,10 @@ export default function Dashboard() {
             handleDeleteLink={handleDeleteLink}
             navigate={navigate}
             onOpenQrCode={(url: string) => setSelectedQrCodeUrl(url)}
+            onEditLink={(link: any) => {
+              setEditLink(link)
+              setIsEditOpen(true)
+            }}
           />
         )}
         {activeTab === 'leads' && <LeadsTab leads={leads} handleExport={handleExport} />}
@@ -411,13 +442,21 @@ export default function Dashboard() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* EDIT LINK MODAL */}
+      <EditLinkDialog
+        link={editLink}
+        open={isEditOpen}
+        onOpenChange={setIsEditOpen}
+        onSaved={handleEditSaved}
+      />
     </div>
   )
 }
 
 // --- TAB COMPONENTS ---
 
-function HomeTab({ user, leads, links, navigate, setActiveTab }: any) {
+function HomeTab({ user, leads, links, clicks, navigate, setActiveTab }: any) {
   const totalClicks = links.reduce((sum: number, l: any) => sum + (l.click_count || 0), 0)
   return (
     <div className="space-y-10 animate-fade-in-up">
@@ -441,6 +480,9 @@ function HomeTab({ user, leads, links, navigate, setActiveTab }: any) {
           trend={totalClicks > 0 ? 'Ao vivo' : 'Sem dados'}
         />
       </div>
+
+      {/* Click Evolution Chart */}
+      <ClickEvolutionChart clicks={clicks} />
 
       {/* Quick Create Cards */}
       <div className="bg-white rounded-3xl border border-slate-200 p-8 md:p-10 shadow-sm relative overflow-hidden">
@@ -556,7 +598,14 @@ function HomeTab({ user, leads, links, navigate, setActiveTab }: any) {
   )
 }
 
-function LinksTab({ links, handleCopy, handleDeleteLink, navigate, onOpenQrCode }: any) {
+function LinksTab({
+  links,
+  handleCopy,
+  handleDeleteLink,
+  navigate,
+  onOpenQrCode,
+  onEditLink,
+}: any) {
   return (
     <div className="space-y-8 animate-fade-in-up">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -674,6 +723,17 @@ function LinksTab({ links, handleCopy, handleDeleteLink, navigate, onOpenQrCode 
                     >
                       <Copy className="w-4 h-4" />
                     </Button>
+                    {link.is_custom && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        title="Editar Link"
+                        onClick={() => onEditLink(link)}
+                        className="text-slate-700 hover:text-emerald-600 rounded-lg h-9 w-9 p-0 bg-white transition-colors"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </Button>
+                    )}
                     <Button
                       variant="outline"
                       size="sm"
