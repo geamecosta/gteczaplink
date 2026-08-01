@@ -1,6 +1,8 @@
 {
   "_versions": {
-    "waitlist-welcome": 2,
-    "send-newsletter": 1
+    "waitlist-welcome": 8,
+    "send-newsletter": 8,
+    "wahooks-webhook": 1,
+    "r": 1
   }
 }
