@@ -3,6 +3,7 @@ import { useAuth } from '@/hooks/use-auth'
 import { supabase } from '@/lib/supabase/client'
 import { getLinks, deleteLink as deleteWhatsappLink } from '@/services/whatsapp-links'
 import { getUserLinks, deleteUserLink, getLinkClicksForUser } from '@/services/links'
+import { getUserLinkLeads, type LinkLead } from '@/services/leads'
 import { ClickEvolutionChart } from '@/components/dashboard/ClickEvolutionChart'
 import { EditLinkDialog } from '@/components/dashboard/EditLinkDialog'
 import { Link, useNavigate } from 'react-router-dom'
@@ -55,6 +56,7 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('home')
 
   const [leads, setLeads] = useState<any[]>([])
+  const [linkLeads, setLinkLeads] = useState<LinkLead[]>([])
   const [links, setLinks] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
@@ -72,15 +74,17 @@ export default function Dashboard() {
 
   const fetchData = async () => {
     setLoading(true)
-    const [leadsRes, customLinksRes, waLinksRes, clicksRes] = await Promise.all([
+    const [leadsRes, customLinksRes, waLinksRes, clicksRes, linkLeadsRes] = await Promise.all([
       supabase.from('waitlist').select('*').order('created_at', { ascending: false }),
       getUserLinks(),
       getLinks(user!.id),
       getLinkClicksForUser(),
+      getUserLinkLeads(),
     ])
 
     if (leadsRes.data) setLeads(leadsRes.data)
     if (clicksRes.data) setClicks(clicksRes.data)
+    if (linkLeadsRes.data) setLinkLeads(linkLeadsRes.data)
 
     const unifiedCustomLinks = (customLinksRes.data || []).map((item: any) => ({
       id: item.id,
@@ -337,7 +341,9 @@ export default function Dashboard() {
             }}
           />
         )}
-        {activeTab === 'leads' && <LeadsTab leads={leads} handleExport={handleExport} />}
+        {activeTab === 'leads' && (
+          <LeadsTab leads={leads} linkLeads={linkLeads} handleExport={handleExport} />
+        )}
         {activeTab === 'campaigns' && (
           <CampaignsTab
             leads={leads}
@@ -754,10 +760,81 @@ function LinksTab({
   )
 }
 
-function LeadsTab({ leads, handleExport }: any) {
+function LeadsTab({ leads, linkLeads, handleExport }: any) {
+  const groupedByLink = (linkLeads as LinkLead[]).reduce((acc: Record<string, LinkLead[]>, lead) => {
+    const key = lead.short_slug || lead.links?.short_slug || 'sem-link'
+    if (!acc[key]) acc[key] = []
+    acc[key].push(lead)
+    return acc
+  }, {})
+
   return (
     <div className="space-y-8 animate-fade-in-up">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div>
+        <h2 className="text-3xl font-extrabold text-slate-900">Números por Link</h2>
+        <p className="text-slate-500 font-medium mt-1">
+          Quem mandou mensagem no WhatsApp depois de clicar em cada link, agrupado por origem.
+        </p>
+      </div>
+
+      <div className="space-y-6">
+        {Object.keys(groupedByLink).length === 0 && (
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-16 text-center text-slate-500">
+            <Users className="w-12 h-12 mb-4 text-slate-300 mx-auto" />
+            <p className="text-lg font-medium text-slate-900 mb-1">Nenhum lead por link ainda</p>
+            <p className="text-sm">
+              Assim que alguém mandar mensagem pelo WhatsApp após clicar em um link, o número
+              aparece aqui.
+            </p>
+          </div>
+        )}
+
+        {Object.entries(groupedByLink).map(([slug, groupLeads]) => {
+          const title = groupLeads[0]?.links?.title || slug
+          return (
+            <div
+              key={slug}
+              className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden"
+            >
+              <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/80">
+                <div>
+                  <div className="font-extrabold text-slate-900">{title}</div>
+                  <div className="text-xs text-slate-500 font-mono">/{slug}</div>
+                </div>
+                <span className="inline-flex items-center justify-center font-bold px-3 py-1 rounded-full text-xs bg-emerald-100 text-emerald-800">
+                  {groupLeads.length} {groupLeads.length === 1 ? 'contato' : 'contatos'}
+                </span>
+              </div>
+              <Table>
+                <TableHeader className="bg-slate-50/40">
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead className="font-extrabold text-slate-700 h-12">Número</TableHead>
+                    <TableHead className="font-extrabold text-slate-700 h-12">Mensagem</TableHead>
+                    <TableHead className="font-extrabold text-slate-700 h-12 text-right">
+                      Quando
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {groupLeads.map((lead) => (
+                    <TableRow key={lead.id} className="hover:bg-slate-50/50 transition-colors">
+                      <TableCell className="font-bold text-slate-900">{lead.phone}</TableCell>
+                      <TableCell className="text-slate-600 text-sm max-w-xs truncate">
+                        {lead.message || '—'}
+                      </TableCell>
+                      <TableCell className="text-right text-slate-500 font-medium">
+                        {format(new Date(lead.created_at), 'dd/MM/yyyy HH:mm')}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )
+        })}
+      </div>
+
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-slate-200">
         <div>
           <h2 className="text-3xl font-extrabold text-slate-900">Leads Capturados</h2>
           <p className="text-slate-500 font-medium mt-1">

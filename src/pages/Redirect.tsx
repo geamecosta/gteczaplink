@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { getLinkBySlug, recordClick } from '@/services/links'
+import { buildRouterUrl } from '@/lib/router-url'
 import { Loader2, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
@@ -28,7 +29,7 @@ export default function Redirect() {
       }
 
       await recordClick(slug)
-      window.location.href = data.destination_url
+      window.location.href = buildRouterUrl(slug)
     }
     doRedirect()
   }, [slug])
