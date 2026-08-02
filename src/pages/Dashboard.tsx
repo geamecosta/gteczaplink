@@ -761,12 +761,15 @@ function LinksTab({
 }
 
 function LeadsTab({ leads, linkLeads, handleExport }: any) {
-  const groupedByLink = (linkLeads as LinkLead[]).reduce((acc: Record<string, LinkLead[]>, lead) => {
-    const key = lead.short_slug || lead.links?.short_slug || 'sem-link'
-    if (!acc[key]) acc[key] = []
-    acc[key].push(lead)
-    return acc
-  }, {})
+  const groupedByLink = (linkLeads as LinkLead[]).reduce(
+    (acc: Record<string, LinkLead[]>, lead) => {
+      const key = lead.short_slug || lead.links?.short_slug || 'sem-link'
+      if (!acc[key]) acc[key] = []
+      acc[key].push(lead)
+      return acc
+    },
+    {},
+  )
 
   return (
     <div className="space-y-8 animate-fade-in-up">
