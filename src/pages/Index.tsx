@@ -439,7 +439,7 @@ export default function Index() {
           <ProCard
             icon={MessageSquare}
             title="Automação & IA"
-            desc="Chatbots inteligentes para atender seus clientes 24h por dia."
+            desc="IA para atender seus clientes 24 horas por dia."
             locked
           />
         </div>
