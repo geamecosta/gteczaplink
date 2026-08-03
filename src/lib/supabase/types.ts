@@ -9,6 +9,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      leads: {
+        Row: {
+          created_at: string
+          event_timestamp: string | null
+          id: string
+          link_id: string | null
+          message: string | null
+          phone: string
+          short_slug: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_timestamp?: string | null
+          id?: string
+          link_id?: string | null
+          message?: string | null
+          phone: string
+          short_slug?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_timestamp?: string | null
+          id?: string
+          link_id?: string | null
+          message?: string | null
+          phone?: string
+          short_slug?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'leads_link_id_fkey'
+            columns: ['link_id']
+            isOneToOne: false
+            referencedRelation: 'links'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       link_clicks: {
         Row: {
           clicked_at: string
@@ -168,6 +209,13 @@ export type Database = {
           p_referred_by?: string
         }
         Returns: Json
+      }
+      redirect_link: {
+        Args: { p_slug: string }
+        Returns: {
+          destination_url: string
+          link_id: string
+        }[]
       }
     }
     Enums: {
