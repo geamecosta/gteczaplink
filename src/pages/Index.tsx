@@ -8,7 +8,6 @@ import {
   ArrowRight,
   BarChart3,
   Globe,
-  Users,
   Zap,
   CheckCircle2,
   XCircle,
@@ -424,7 +423,7 @@ export default function Index() {
             atendimento via WhatsApp.
           </p>
         </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto px-4">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto px-4">
           <ProCard
             icon={BarChart3}
             title="Analytics Avançado"
@@ -435,12 +434,6 @@ export default function Index() {
             icon={Globe}
             title="Domínio Próprio"
             desc="Use 'link.suaempresa.com.br' ao invés do tradicional 'wa.me'."
-            locked
-          />
-          <ProCard
-            icon={Users}
-            title="CRM e Equipe"
-            desc="Atendimento multiusuário. Distribua os leads gerados entre seu time."
             locked
           />
           <ProCard
