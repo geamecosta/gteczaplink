@@ -118,6 +118,16 @@ export async function recordClick(slug: string) {
   return { error }
 }
 
+export async function recordClickDetail(linkId: string, slug: string) {
+  const { error } = await supabase.from('link_clicks').insert({
+    link_id: linkId,
+    short_slug: slug,
+    referrer: typeof document !== 'undefined' ? document.referrer || null : null,
+    user_agent: typeof navigator !== 'undefined' ? navigator.userAgent || null : null,
+  })
+  return { error }
+}
+
 export async function getTotalClicks(): Promise<number> {
   const { data, error } = await supabase.from('links').select('click_count')
   if (error || !data) return 0
@@ -127,7 +137,7 @@ export async function getTotalClicks(): Promise<number> {
 export async function getLinkClicksForUser() {
   const { data, error } = await supabase
     .from('link_clicks')
-    .select('clicked_at')
+    .select('clicked_at, link_id')
     .order('clicked_at', { ascending: true })
   return { data: data || [], error }
 }

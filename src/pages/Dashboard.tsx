@@ -224,6 +224,15 @@ export default function Dashboard() {
     )
   }
 
+  const todayClicksByLink: Record<string, number> = {}
+  const todayStart = new Date()
+  todayStart.setHours(0, 0, 0, 0)
+  for (const click of clicks) {
+    if (!click.link_id) continue
+    if (new Date(click.clicked_at) < todayStart) continue
+    todayClicksByLink[click.link_id] = (todayClicksByLink[click.link_id] || 0) + 1
+  }
+
   return (
     <div className="flex flex-col md:flex-row gap-8 animate-fade-in pb-12 w-full">
       {/* MOBILE NAVIGATION */}
@@ -331,6 +340,7 @@ export default function Dashboard() {
         {activeTab === 'links' && (
           <LinksTab
             links={links}
+            todayClicksByLink={todayClicksByLink}
             handleCopy={handleCopy}
             handleDeleteLink={handleDeleteLink}
             navigate={navigate}
@@ -606,6 +616,7 @@ function HomeTab({ user, leads, links, clicks, navigate, setActiveTab }: any) {
 
 function LinksTab({
   links,
+  todayClicksByLink,
   handleCopy,
   handleDeleteLink,
   navigate,
@@ -630,6 +641,7 @@ function LinksTab({
       </div>
 
       <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
         <Table>
           <TableHeader className="bg-slate-50/80 border-b border-slate-100">
             <TableRow className="hover:bg-transparent">
@@ -639,6 +651,7 @@ function LinksTab({
               <TableHead className="font-extrabold text-slate-700 h-14 text-center">
                 Cliques
               </TableHead>
+              <TableHead className="font-extrabold text-slate-700 h-14 text-center">Hoje</TableHead>
               <TableHead className="font-extrabold text-slate-700 h-14">Criado em</TableHead>
               <TableHead className="text-right font-extrabold text-slate-700 h-14">Ações</TableHead>
             </TableRow>
@@ -646,7 +659,7 @@ function LinksTab({
           <TableBody>
             {links.length === 0 && (
               <TableRow className="hover:bg-transparent">
-                <TableCell colSpan={6} className="text-center py-16">
+                <TableCell colSpan={7} className="text-center py-16">
                   <div className="flex flex-col items-center justify-center text-slate-500">
                     <LinkIcon className="w-12 h-12 mb-4 text-slate-300" />
                     <p className="text-lg font-medium text-slate-900 mb-1">Nenhum link gerado</p>
@@ -706,6 +719,11 @@ function LinksTab({
                     {link.click_count || 0}
                   </span>
                 </TableCell>
+                <TableCell className="text-center">
+                  <span className="inline-flex items-center justify-center font-bold px-3 py-1.5 rounded-full text-sm bg-blue-50 text-blue-700">
+                    {todayClicksByLink[link.id] || 0}
+                  </span>
+                </TableCell>
                 <TableCell className="text-slate-500 font-medium text-xs">
                   {format(new Date(link.created_at), 'dd/MM/yyyy')}
                 </TableCell>
@@ -755,6 +773,7 @@ function LinksTab({
             ))}
           </TableBody>
         </Table>
+        </div>
       </div>
     </div>
   )
