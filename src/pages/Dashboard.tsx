@@ -649,14 +649,18 @@ function LinksTab({
                   Título / Destino
                 </TableHead>
                 <TableHead className="font-extrabold text-slate-700 h-14">Link Curto</TableHead>
-                <TableHead className="font-extrabold text-slate-700 h-14">Tags & Extras</TableHead>
+                <TableHead className="font-extrabold text-slate-700 h-14 hidden lg:table-cell">
+                Tags & Extras
+              </TableHead>
                 <TableHead className="font-extrabold text-slate-700 h-14 text-center">
                   Cliques
                 </TableHead>
                 <TableHead className="font-extrabold text-slate-700 h-14 text-center">
                   Hoje
                 </TableHead>
-                <TableHead className="font-extrabold text-slate-700 h-14">Criado em</TableHead>
+                <TableHead className="font-extrabold text-slate-700 h-14 hidden md:table-cell">
+                Criado em
+              </TableHead>
                 <TableHead className="text-right font-extrabold text-slate-700 h-14">
                   Ações
                 </TableHead>
@@ -693,7 +697,7 @@ function LinksTab({
                       <ExternalLink className="w-3.5 h-3.5 shrink-0" />
                     </a>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="hidden lg:table-cell">
                     <div className="flex flex-wrap gap-1 items-center">
                       {link.tags && link.tags.length > 0 ? (
                         link.tags.map((tag: string) => (
@@ -730,7 +734,7 @@ function LinksTab({
                       {todayClicksByLink[link.id] || 0}
                     </span>
                   </TableCell>
-                  <TableCell className="text-slate-500 font-medium text-xs">
+                  <TableCell className="text-slate-500 font-medium text-xs hidden md:table-cell">
                     {format(new Date(link.created_at), 'dd/MM/yyyy')}
                   </TableCell>
                   <TableCell className="text-right">
