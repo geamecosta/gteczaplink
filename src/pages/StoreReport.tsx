@@ -11,7 +11,14 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { ArrowLeft, Loader2, MousePointerClick, MessageCircle, TrendingUp, Users } from 'lucide-react'
+import {
+  ArrowLeft,
+  Loader2,
+  MousePointerClick,
+  MessageCircle,
+  TrendingUp,
+  Users,
+} from 'lucide-react'
 import { format } from 'date-fns'
 import { getShortUrl } from '@/lib/short-url'
 
@@ -103,7 +110,9 @@ export default function StoreReport() {
   const clicksToday = clicks.filter((c) => new Date(c.clicked_at) >= todayStart).length
   const conversionRate = totalClicks > 0 ? (leads.length / totalClicks) * 100 : 0
 
-  const mobileClicks = clicks.filter((c) => /mobile|android|iphone/i.test(c.user_agent || '')).length
+  const mobileClicks = clicks.filter((c) =>
+    /mobile|android|iphone/i.test(c.user_agent || ''),
+  ).length
   const desktopClicks = clicks.length - mobileClicks
 
   const clicksByDay: Record<string, number> = {}
@@ -126,7 +135,9 @@ export default function StoreReport() {
           <h1 className="text-3xl font-extrabold text-slate-900">
             {link.title || 'Relatório do link'}
           </h1>
-          <p className="text-slate-500 font-medium mt-1 break-all">{getShortUrl(link.short_slug)}</p>
+          <p className="text-slate-500 font-medium mt-1 break-all">
+            {getShortUrl(link.short_slug)}
+          </p>
         </div>
       </div>
 

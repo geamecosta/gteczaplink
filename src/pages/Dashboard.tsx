@@ -650,8 +650,8 @@ function LinksTab({
                 </TableHead>
                 <TableHead className="font-extrabold text-slate-700 h-14">Link Curto</TableHead>
                 <TableHead className="font-extrabold text-slate-700 h-14 hidden lg:table-cell">
-                Tags & Extras
-              </TableHead>
+                  Tags & Extras
+                </TableHead>
                 <TableHead className="font-extrabold text-slate-700 h-14 text-center">
                   Cliques
                 </TableHead>
@@ -659,8 +659,8 @@ function LinksTab({
                   Hoje
                 </TableHead>
                 <TableHead className="font-extrabold text-slate-700 h-14 hidden md:table-cell">
-                Criado em
-              </TableHead>
+                  Criado em
+                </TableHead>
                 <TableHead className="text-right font-extrabold text-slate-700 h-14">
                   Ações
                 </TableHead>
