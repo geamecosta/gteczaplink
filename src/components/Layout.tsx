@@ -1,7 +1,11 @@
-import { Outlet } from 'react-router-dom'
+import { Outlet, useLocation } from 'react-router-dom'
 import { Header } from '@/components/Header'
+import { cn } from '@/lib/utils'
 
 export default function Layout() {
+  // The dashboard holds wide data tables; marketing pages stay narrow for readability.
+  const isWidePage = useLocation().pathname.startsWith('/dashboard')
+
   return (
     <div className="min-h-screen bg-[#FAFAFA] flex flex-col font-sans text-slate-900 selection:bg-emerald-500/20 relative overflow-hidden">
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1200px] h-[600px] opacity-[0.15] pointer-events-none -z-10">
@@ -9,7 +13,12 @@ export default function Layout() {
       </div>
 
       <Header />
-      <main className="flex-1 container max-w-6xl mx-auto px-4 py-8 md:py-12 relative z-0">
+      <main
+        className={cn(
+          'flex-1 container mx-auto px-4 py-8 md:py-12 relative z-0',
+          isWidePage ? 'max-w-[1600px]' : 'max-w-6xl',
+        )}
+      >
         <Outlet />
       </main>
 
