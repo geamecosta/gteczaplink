@@ -642,137 +642,143 @@ function LinksTab({
 
       <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
-        <Table>
-          <TableHeader className="bg-slate-50/80 border-b border-slate-100">
-            <TableRow className="hover:bg-transparent">
-              <TableHead className="font-extrabold text-slate-700 h-14">Título / Destino</TableHead>
-              <TableHead className="font-extrabold text-slate-700 h-14">Link Curto</TableHead>
-              <TableHead className="font-extrabold text-slate-700 h-14">Tags & Extras</TableHead>
-              <TableHead className="font-extrabold text-slate-700 h-14 text-center">
-                Cliques
-              </TableHead>
-              <TableHead className="font-extrabold text-slate-700 h-14 text-center">Hoje</TableHead>
-              <TableHead className="font-extrabold text-slate-700 h-14">Criado em</TableHead>
-              <TableHead className="text-right font-extrabold text-slate-700 h-14">Ações</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {links.length === 0 && (
+          <Table>
+            <TableHeader className="bg-slate-50/80 border-b border-slate-100">
               <TableRow className="hover:bg-transparent">
-                <TableCell colSpan={7} className="text-center py-16">
-                  <div className="flex flex-col items-center justify-center text-slate-500">
-                    <LinkIcon className="w-12 h-12 mb-4 text-slate-300" />
-                    <p className="text-lg font-medium text-slate-900 mb-1">Nenhum link gerado</p>
-                    <p className="text-sm">Você ainda não gerou nenhum link no GtecZap.</p>
-                  </div>
-                </TableCell>
+                <TableHead className="font-extrabold text-slate-700 h-14">
+                  Título / Destino
+                </TableHead>
+                <TableHead className="font-extrabold text-slate-700 h-14">Link Curto</TableHead>
+                <TableHead className="font-extrabold text-slate-700 h-14">Tags & Extras</TableHead>
+                <TableHead className="font-extrabold text-slate-700 h-14 text-center">
+                  Cliques
+                </TableHead>
+                <TableHead className="font-extrabold text-slate-700 h-14 text-center">
+                  Hoje
+                </TableHead>
+                <TableHead className="font-extrabold text-slate-700 h-14">Criado em</TableHead>
+                <TableHead className="text-right font-extrabold text-slate-700 h-14">
+                  Ações
+                </TableHead>
               </TableRow>
-            )}
-            {links.map((link: any) => (
-              <TableRow key={link.id} className="hover:bg-slate-50/50 transition-colors">
-                <TableCell>
-                  <div className="font-bold text-slate-900">{link.title || 'Link Curto'}</div>
-                  <div className="text-slate-400 text-xs truncate max-w-[220px]">
-                    {link.destination_url}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <a
-                    href={link.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-emerald-600 hover:text-emerald-700 hover:underline flex items-center gap-1.5 font-bold truncate max-w-[240px] bg-emerald-50 px-3 py-1.5 rounded-lg inline-flex"
-                  >
-                    {link.url.replace('https://', '')}
-                    <ExternalLink className="w-3.5 h-3.5 shrink-0" />
-                  </a>
-                </TableCell>
-                <TableCell>
-                  <div className="flex flex-wrap gap-1 items-center">
-                    {link.tags && link.tags.length > 0 ? (
-                      link.tags.map((tag: string) => (
-                        <Badge
-                          key={tag}
-                          variant="outline"
-                          className="text-[10px] bg-slate-100 text-slate-600 border-slate-200"
-                        >
-                          #{tag}
+            </TableHeader>
+            <TableBody>
+              {links.length === 0 && (
+                <TableRow className="hover:bg-transparent">
+                  <TableCell colSpan={7} className="text-center py-16">
+                    <div className="flex flex-col items-center justify-center text-slate-500">
+                      <LinkIcon className="w-12 h-12 mb-4 text-slate-300" />
+                      <p className="text-lg font-medium text-slate-900 mb-1">Nenhum link gerado</p>
+                      <p className="text-sm">Você ainda não gerou nenhum link no GtecZap.</p>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )}
+              {links.map((link: any) => (
+                <TableRow key={link.id} className="hover:bg-slate-50/50 transition-colors">
+                  <TableCell>
+                    <div className="font-bold text-slate-900">{link.title || 'Link Curto'}</div>
+                    <div className="text-slate-400 text-xs truncate max-w-[220px]">
+                      {link.destination_url}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <a
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-emerald-600 hover:text-emerald-700 hover:underline flex items-center gap-1.5 font-bold truncate max-w-[240px] bg-emerald-50 px-3 py-1.5 rounded-lg inline-flex"
+                    >
+                      {link.url.replace('https://', '')}
+                      <ExternalLink className="w-3.5 h-3.5 shrink-0" />
+                    </a>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-wrap gap-1 items-center">
+                      {link.tags && link.tags.length > 0 ? (
+                        link.tags.map((tag: string) => (
+                          <Badge
+                            key={tag}
+                            variant="outline"
+                            className="text-[10px] bg-slate-100 text-slate-600 border-slate-200"
+                          >
+                            #{tag}
+                          </Badge>
+                        ))
+                      ) : (
+                        <span className="text-slate-400 text-xs font-medium">-</span>
+                      )}
+                      {link.utm_source && (
+                        <Badge className="text-[10px] bg-blue-50 text-blue-700 border-blue-200">
+                          utm: {link.utm_source}
                         </Badge>
-                      ))
-                    ) : (
-                      <span className="text-slate-400 text-xs font-medium">-</span>
-                    )}
-                    {link.utm_source && (
-                      <Badge className="text-[10px] bg-blue-50 text-blue-700 border-blue-200">
-                        utm: {link.utm_source}
-                      </Badge>
-                    )}
-                    {link.expires_at && (
-                      <Badge className="text-[10px] bg-amber-50 text-amber-700 border-amber-200 flex items-center gap-1">
-                        <Clock className="w-2.5 h-2.5" /> Expira
-                      </Badge>
-                    )}
-                  </div>
-                </TableCell>
-                <TableCell className="text-center">
-                  <span className="inline-flex items-center justify-center font-extrabold px-3 py-1.5 rounded-full text-sm bg-emerald-50 text-emerald-700">
-                    {link.click_count || 0}
-                  </span>
-                </TableCell>
-                <TableCell className="text-center">
-                  <span className="inline-flex items-center justify-center font-bold px-3 py-1.5 rounded-full text-sm bg-blue-50 text-blue-700">
-                    {todayClicksByLink[link.id] || 0}
-                  </span>
-                </TableCell>
-                <TableCell className="text-slate-500 font-medium text-xs">
-                  {format(new Date(link.created_at), 'dd/MM/yyyy')}
-                </TableCell>
-                <TableCell className="text-right">
-                  <div className="flex justify-end gap-1.5">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      title="Ver QR Code"
-                      onClick={() => onOpenQrCode(link.url)}
-                      className="text-slate-700 hover:text-emerald-600 rounded-lg h-9 w-9 p-0 bg-white"
-                    >
-                      <QrCode className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      title="Copiar Link"
-                      onClick={() => handleCopy(link.url)}
-                      className="text-slate-700 hover:text-emerald-600 rounded-lg h-9 w-9 p-0 bg-white"
-                    >
-                      <Copy className="w-4 h-4" />
-                    </Button>
-                    {link.is_custom && (
+                      )}
+                      {link.expires_at && (
+                        <Badge className="text-[10px] bg-amber-50 text-amber-700 border-amber-200 flex items-center gap-1">
+                          <Clock className="w-2.5 h-2.5" /> Expira
+                        </Badge>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <span className="inline-flex items-center justify-center font-extrabold px-3 py-1.5 rounded-full text-sm bg-emerald-50 text-emerald-700">
+                      {link.click_count || 0}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <span className="inline-flex items-center justify-center font-bold px-3 py-1.5 rounded-full text-sm bg-blue-50 text-blue-700">
+                      {todayClicksByLink[link.id] || 0}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-slate-500 font-medium text-xs">
+                    {format(new Date(link.created_at), 'dd/MM/yyyy')}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-1.5">
                       <Button
                         variant="outline"
                         size="sm"
-                        title="Editar Link"
-                        onClick={() => onEditLink(link)}
-                        className="text-slate-700 hover:text-emerald-600 rounded-lg h-9 w-9 p-0 bg-white transition-colors"
+                        title="Ver QR Code"
+                        onClick={() => onOpenQrCode(link.url)}
+                        className="text-slate-700 hover:text-emerald-600 rounded-lg h-9 w-9 p-0 bg-white"
                       >
-                        <Pencil className="w-4 h-4" />
+                        <QrCode className="w-4 h-4" />
                       </Button>
-                    )}
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      title="Excluir Link"
-                      onClick={() => handleDeleteLink(link)}
-                      className="text-slate-700 hover:text-red-600 hover:border-red-200 hover:bg-red-50 rounded-lg h-9 w-9 p-0 bg-white transition-colors"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        title="Copiar Link"
+                        onClick={() => handleCopy(link.url)}
+                        className="text-slate-700 hover:text-emerald-600 rounded-lg h-9 w-9 p-0 bg-white"
+                      >
+                        <Copy className="w-4 h-4" />
+                      </Button>
+                      {link.is_custom && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          title="Editar Link"
+                          onClick={() => onEditLink(link)}
+                          className="text-slate-700 hover:text-emerald-600 rounded-lg h-9 w-9 p-0 bg-white transition-colors"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </Button>
+                      )}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        title="Excluir Link"
+                        onClick={() => handleDeleteLink(link)}
+                        className="text-slate-700 hover:text-red-600 hover:border-red-200 hover:bg-red-50 rounded-lg h-9 w-9 p-0 bg-white transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </div>
       </div>
     </div>
