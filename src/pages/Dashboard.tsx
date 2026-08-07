@@ -49,6 +49,7 @@ import { toast } from 'sonner'
 import { format } from 'date-fns'
 import { cn } from '@/lib/utils'
 import { getShortUrl } from '@/lib/short-url'
+import { downloadCsv } from '@/lib/export-csv'
 
 export default function Dashboard() {
   const { user } = useAuth()
@@ -813,11 +814,35 @@ function LeadsTab({ leads, linkLeads, handleExport }: any) {
 
   return (
     <div className="space-y-8 animate-fade-in-up">
-      <div>
-        <h2 className="text-3xl font-extrabold text-slate-900">Números por Link</h2>
-        <p className="text-slate-500 font-medium mt-1">
-          Quem mandou mensagem no WhatsApp depois de clicar em cada link, agrupado por origem.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-3xl font-extrabold text-slate-900">Números por Link</h2>
+          <p className="text-slate-500 font-medium mt-1">
+            Quem mandou mensagem no WhatsApp depois de clicar em cada link, agrupado por origem.
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          disabled={linkLeads.length === 0}
+          onClick={() =>
+            downloadCsv(
+              'leads-por-link.csv',
+              ['Link', 'Slug', 'Numero', 'Mensagem', 'Data'],
+              Object.entries(groupedByLink).flatMap(([slug, groupLeads]) =>
+                (groupLeads as LinkLead[]).map((lead) => [
+                  lead.links?.title || slug,
+                  slug,
+                  lead.phone,
+                  lead.message || '',
+                  format(new Date(lead.created_at), 'dd/MM/yyyy HH:mm'),
+                ]),
+              ),
+            )
+          }
+          className="bg-white hover:bg-slate-50 h-12 px-6 rounded-xl font-bold shadow-sm border-slate-200 text-slate-700 shrink-0"
+        >
+          <Download className="w-5 h-5 mr-2" /> Exportar por link
+        </Button>
       </div>
 
       <div className="space-y-6">

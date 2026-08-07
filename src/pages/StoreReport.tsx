@@ -11,9 +11,18 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { ArrowLeft, Loader2, MousePointerClick, MessageCircle, TrendingUp, Users } from 'lucide-react'
+import {
+  ArrowLeft,
+  Loader2,
+  MousePointerClick,
+  MessageCircle,
+  TrendingUp,
+  Users,
+  Download,
+} from 'lucide-react'
 import { format } from 'date-fns'
 import { getShortUrl } from '@/lib/short-url'
+import { downloadCsv } from '@/lib/export-csv'
 
 interface ClickRow {
   clicked_at: string
@@ -198,13 +207,33 @@ export default function StoreReport() {
       </div>
 
       <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/80">
-          <h2 className="text-lg font-extrabold text-slate-900">
-            Contatos capturados ({leads.length})
-          </h2>
-          <p className="text-sm text-slate-500">
-            Quem clicou no link e mandou mensagem no WhatsApp.
-          </p>
+        <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-extrabold text-slate-900">
+              Contatos capturados ({leads.length})
+            </h2>
+            <p className="text-sm text-slate-500">
+              Quem clicou no link e mandou mensagem no WhatsApp.
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            disabled={leads.length === 0}
+            onClick={() =>
+              downloadCsv(
+                `leads-${link.short_slug}.csv`,
+                ['Numero', 'Mensagem', 'Data'],
+                leads.map((lead) => [
+                  lead.phone,
+                  lead.message || '',
+                  format(new Date(lead.created_at), 'dd/MM/yyyy HH:mm'),
+                ]),
+              )
+            }
+            className="bg-white hover:bg-slate-50 h-11 px-5 rounded-xl font-bold shadow-sm border-slate-200 text-slate-700 shrink-0"
+          >
+            <Download className="w-4 h-4 mr-2" /> Exportar CSV
+          </Button>
         </div>
         <div className="overflow-x-auto">
           <Table>
