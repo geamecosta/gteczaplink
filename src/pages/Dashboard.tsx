@@ -649,14 +649,18 @@ function LinksTab({
                   Título / Destino
                 </TableHead>
                 <TableHead className="font-extrabold text-slate-700 h-14">Link Curto</TableHead>
-                <TableHead className="font-extrabold text-slate-700 h-14">Tags & Extras</TableHead>
+                <TableHead className="font-extrabold text-slate-700 h-14 hidden lg:table-cell">
+                Tags & Extras
+              </TableHead>
                 <TableHead className="font-extrabold text-slate-700 h-14 text-center">
                   Cliques
                 </TableHead>
                 <TableHead className="font-extrabold text-slate-700 h-14 text-center">
                   Hoje
                 </TableHead>
-                <TableHead className="font-extrabold text-slate-700 h-14">Criado em</TableHead>
+                <TableHead className="font-extrabold text-slate-700 h-14 hidden md:table-cell">
+                Criado em
+              </TableHead>
                 <TableHead className="text-right font-extrabold text-slate-700 h-14">
                   Ações
                 </TableHead>
@@ -693,7 +697,7 @@ function LinksTab({
                       <ExternalLink className="w-3.5 h-3.5 shrink-0" />
                     </a>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="hidden lg:table-cell">
                     <div className="flex flex-wrap gap-1 items-center">
                       {link.tags && link.tags.length > 0 ? (
                         link.tags.map((tag: string) => (
@@ -730,7 +734,7 @@ function LinksTab({
                       {todayClicksByLink[link.id] || 0}
                     </span>
                   </TableCell>
-                  <TableCell className="text-slate-500 font-medium text-xs">
+                  <TableCell className="text-slate-500 font-medium text-xs hidden md:table-cell">
                     {format(new Date(link.created_at), 'dd/MM/yyyy')}
                   </TableCell>
                   <TableCell className="text-right">
@@ -762,6 +766,17 @@ function LinksTab({
                           className="text-slate-700 hover:text-emerald-600 rounded-lg h-9 w-9 p-0 bg-white transition-colors"
                         >
                           <Pencil className="w-4 h-4" />
+                        </Button>
+                      )}
+                      {link.is_custom && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          title="Ver relatório"
+                          onClick={() => navigate(`/relatorio/${link.short_slug}`)}
+                          className="text-slate-700 hover:text-emerald-600 rounded-lg h-9 w-9 p-0 bg-white transition-colors"
+                        >
+                          <BarChart3 className="w-4 h-4" />
                         </Button>
                       )}
                       <Button

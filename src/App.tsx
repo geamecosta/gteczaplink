@@ -8,6 +8,7 @@ import Layout from './components/Layout'
 import Dashboard from './pages/Dashboard'
 import ReferralStatus from './pages/ReferralStatus'
 import CreateLink from './pages/CreateLink'
+import StoreReport from './pages/StoreReport'
 import Redirect from './pages/Redirect'
 import { AuthProvider } from '@/hooks/use-auth'
 
@@ -22,6 +23,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/links/create" element={<CreateLink />} />
+            <Route path="/relatorio/:slug" element={<StoreReport />} />
             <Route path="/status" element={<ReferralStatus />} />
           </Route>
           <Route path="/r/:slug" element={<Redirect />} />
