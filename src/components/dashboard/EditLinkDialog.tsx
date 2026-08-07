@@ -27,6 +27,7 @@ export function EditLinkDialog({ link, open, onOpenChange, onSaved }: EditLinkDi
   const [utmSource, setUtmSource] = useState('')
   const [utmMedium, setUtmMedium] = useState('')
   const [utmCampaign, setUtmCampaign] = useState('')
+  const [tags, setTags] = useState('')
   const [saving, setSaving] = useState(false)
   const [urlError, setUrlError] = useState('')
 
@@ -48,6 +49,7 @@ export function EditLinkDialog({ link, open, onOpenChange, onSaved }: EditLinkDi
       setUtmSource(link.utm_source || '')
       setUtmMedium(link.utm_medium || '')
       setUtmCampaign(link.utm_campaign || '')
+      setTags(Array.isArray(link.tags) ? link.tags.join(', ') : '')
       setUrlError('')
     }
   }, [link, open])
@@ -78,6 +80,10 @@ export function EditLinkDialog({ link, open, onOpenChange, onSaved }: EditLinkDi
     const { data, error } = await updateLink(link.id, {
       title: title.trim() || null,
       destination_url: destinationUrl.trim(),
+      tags: tags
+        .split(',')
+        .map((tag) => tag.trim().replace(/^#/, ''))
+        .filter(Boolean),
       utm_source: utmSource.trim() || null,
       utm_medium: utmMedium.trim() || null,
       utm_campaign: utmCampaign.trim() || null,
@@ -136,6 +142,20 @@ export function EditLinkDialog({ link, open, onOpenChange, onSaved }: EditLinkDi
                 <AlertCircle className="w-3 h-3" /> {urlError}
               </p>
             )}
+          </div>
+          <div className="space-y-2">
+            <Label className="text-sm font-bold text-slate-800">
+              Tags <span className="text-slate-400 font-normal">(separadas por vírgula)</span>
+            </Label>
+            <Input
+              value={tags}
+              onChange={(e) => setTags(e.target.value)}
+              placeholder="Ex: dpimenta, parceiros44"
+              className="h-11 rounded-xl border-slate-200 text-slate-900 focus:border-emerald-500"
+            />
+            <p className="text-xs text-slate-500">
+              Etiquetas para organizar seus links na listagem.
+            </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
             <div className="space-y-2">

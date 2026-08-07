@@ -147,6 +147,7 @@ export async function updateLink(
   payload: {
     title?: string | null
     destination_url: string
+    tags?: string[]
     utm_source?: string | null
     utm_medium?: string | null
     utm_campaign?: string | null
@@ -176,6 +177,7 @@ export async function updateLink(
     .update({
       title: payload.title?.trim() || null,
       destination_url: finalDestinationUrl,
+      ...(payload.tags ? { tags: payload.tags } : {}),
       utm_source: payload.utm_source?.trim() || null,
       utm_medium: payload.utm_medium?.trim() || null,
       utm_campaign: payload.utm_campaign?.trim() || null,
