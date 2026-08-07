@@ -768,6 +768,17 @@ function LinksTab({
                           <Pencil className="w-4 h-4" />
                         </Button>
                       )}
+                      {link.is_custom && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          title="Ver relatório"
+                          onClick={() => navigate(`/relatorio/${link.short_slug}`)}
+                          className="text-slate-700 hover:text-emerald-600 rounded-lg h-9 w-9 p-0 bg-white transition-colors"
+                        >
+                          <BarChart3 className="w-4 h-4" />
+                        </Button>
+                      )}
                       <Button
                         variant="outline"
                         size="sm"
